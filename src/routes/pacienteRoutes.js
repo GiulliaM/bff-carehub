@@ -1,0 +1,12 @@
+import express from "express";
+import { criarPaciente, buscarPacientes, buscarPacientePorId, atualizarPacienteRota } from "../controllers/pacienteController.js";
+import { buscarHistorico, atualizarHistorico } from "../controllers/historicoMedicoController.js";
+import middlewareAutenticacao from "../middleware/middlewareAutenticacao.js";
+const router = express.Router();
+router.post("/", middlewareAutenticacao, criarPaciente);
+router.get("/", middlewareAutenticacao, buscarPacientes);
+router.get("/:id", middlewareAutenticacao, buscarPacientePorId);
+router.patch("/:id", middlewareAutenticacao, atualizarPacienteRota);
+router.get("/:id/historico-medico", middlewareAutenticacao, buscarHistorico);
+router.patch("/:id/historico-medico", middlewareAutenticacao, atualizarHistorico);
+export default router;
