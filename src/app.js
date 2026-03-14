@@ -5,10 +5,10 @@ import pacienteRoutes from "./routes/pacienteRoutes.js";
 import tarefaRoutes from "./routes/tarefaRoutes.js";
 import medicamentoRoutes from "./routes/medicamentoRoutes.js";
 import diarioRoutes from "./routes/diarioRoutes.js";
-import cuidadorRoutes from "./routes/cuidadorRoutes.js";
-import cuidadoresRoutes from "./routes/cuidadoresRoutes.js";
-import vinculoRoutes from "./routes/vinculoRoutes.js";
-import grupoCuidadoRoutes from "./routes/grupoCuidadoRoutes.js";
+//import cuidadorRoutes from "./routes/cuidadorRoutes.js";
+//import cuidadoresRoutes from "./routes/cuidadoresRoutes.js";
+//import vinculoRoutes from "./routes/vinculoRoutes.js";
+//import grupoCuidadoRoutes from "./routes/grupoCuidadoRoutes.js";
 
 const app = express();
 app.use(cors());
@@ -19,10 +19,10 @@ app.use("/api/pacientes", pacienteRoutes);
 app.use("/api/tarefas", tarefaRoutes);
 app.use("/api/medicamentos", medicamentoRoutes);
 app.use("/api/diario", diarioRoutes);
-app.use("/api/cuidador", cuidadorRoutes);
-app.use("/api/cuidadores", cuidadoresRoutes);
-app.use("/api/vinculos", vinculoRoutes);
-app.use("/api/grupo", grupoCuidadoRoutes);
+//app.use("/api/cuidador", cuidadorRoutes);
+//app.use("/api/cuidadores", cuidadoresRoutes);
+//app.use("/api/vinculos", vinculoRoutes);
+//app.use("/api/grupo", grupoCuidadoRoutes);
 
 app.get("/", (req, res) => res.json({ message: "CareHub API OK", version: "2.0.0" }));
 
