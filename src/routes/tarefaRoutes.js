@@ -1,11 +1,11 @@
 import express from "express";
 import { criarTarefa, buscarTarefas, buscarTarefaPorId, excluirTarefa, atualizarTarefa, alternarTarefa } from "../controllers/tarefaController.js";
-//import middlewareAutenticacao from "../middleware/middlewareAutenticacao.js";
+import middlewareAutenticacao from "../middleware/middlewareAutenticacao.js";
 const router = express.Router();
-/*router.post("/", middlewareAutenticacao, criarTarefa);
+router.post("/", middlewareAutenticacao, criarTarefa);
 router.get("/", middlewareAutenticacao, buscarTarefas);
 router.get("/:id", middlewareAutenticacao, buscarTarefaPorId);
 router.patch("/:id", middlewareAutenticacao, atualizarTarefa);
 router.patch("/:id/toggle", middlewareAutenticacao, alternarTarefa);
-//router.delete("/:id", middlewareAutenticacao, excluirTarefa);*/
+router.delete("/:id", middlewareAutenticacao, excluirTarefa);
 export default router;

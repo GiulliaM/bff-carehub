@@ -1,9 +1,9 @@
 import Tarefa from "../models/tarefaModel.js";
 import { pacientePertenceAoUsuario } from "../models/pacienteModel.js";
-/*import {
+import {
   listarResponsaveisTarefa,
   setResponsaveisTarefa,
-} from "../models/grupoCuidadoModel.js";*/
+} from "../models/grupoCuidadoModel.js";
 
 export const buscarTarefas = (req, res) => {
   const { paciente_id } = req.query;
