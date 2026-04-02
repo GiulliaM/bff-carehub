@@ -5,10 +5,11 @@ const MAX_PACIENTES_POR_USUARIO = 3;
 
 /**
  * Lista pacientes vinculados ao usuario (grupo de cuidado ativo).
+ * ADICIONADO: gc.parentesco para o app saber a relação do usuário com cada paciente.
  */
 export const listarPacientesDoUsuario = (usuarioId, cb) => {
   const sql = `
-    SELECT p.*, gc.papel, gc.status, gc.data_vinculo
+    SELECT p.*, gc.papel, gc.status, gc.data_vinculo, gc.parentesco
     FROM grupo_cuidado gc
     JOIN pacientes p ON p.paciente_id = gc.paciente_id
     WHERE gc.usuario_id = ? AND gc.status = 'Ativo'
@@ -19,11 +20,12 @@ export const listarPacientesDoUsuario = (usuarioId, cb) => {
 
 /**
  * Lista membros do grupo de cuidado de um paciente.
+ * ADICIONADO: gc.parentesco para exibir no feed "Quem é quem" (Ex: João - Sobrinho).
  */
 export const listarMembrosDoGrupo = (pacienteId, cb) => {
   const sql = `
     SELECT u.usuario_id, u.nome, u.email, u.tipo, u.telefone, u.foto_url,
-           gc.papel, gc.status, gc.data_vinculo
+           gc.papel, gc.status, gc.data_vinculo, gc.parentesco
     FROM grupo_cuidado gc
     JOIN usuarios u ON u.usuario_id = gc.usuario_id
     WHERE gc.paciente_id = ? AND gc.status = 'Ativo'
@@ -48,8 +50,9 @@ export const usuarioNoGrupo = (usuarioId, pacienteId, cb) => {
 
 /**
  * Adicionar membro ao grupo (com validacao de limites).
+ * ATUALIZADO: Agora aceita o campo 'parentesco' vindo do formulário/convite.
  */
-export const adicionarMembro = (usuarioId, pacienteId, papel, cb) => {
+export const adicionarMembro = (usuarioId, pacienteId, papel, parentesco, cb) => {
   // Verificar limite de membros do paciente
   db.query(
     "SELECT COUNT(*) AS total FROM grupo_cuidado WHERE paciente_id = ? AND status = 'Ativo'",
@@ -70,12 +73,15 @@ export const adicionarMembro = (usuarioId, pacienteId, papel, cb) => {
             return cb(null, { error: `Voce ja esta vinculado a ${MAX_PACIENTES_POR_USUARIO} pacientes.` });
           }
 
+          // Inserção com o novo campo parentesco
+          // Usamos COALESCE ou o valor padrão do banco 'Familiar' caso venha vazio
           const sql = `
-            INSERT INTO grupo_cuidado (usuario_id, paciente_id, papel, status)
-            VALUES (?, ?, ?, 'Ativo')
-            ON DUPLICATE KEY UPDATE status = 'Ativo', papel = VALUES(papel)
+            INSERT INTO grupo_cuidado (usuario_id, paciente_id, papel, status, parentesco)
+            VALUES (?, ?, ?, 'Ativo', ?)
+            ON DUPLICATE KEY UPDATE status = 'Ativo', papel = VALUES(papel), parentesco = VALUES(parentesco)
           `;
-          db.query(sql, [usuarioId, pacienteId, papel || "familiar"], (err3, result) => {
+          
+          db.query(sql, [usuarioId, pacienteId, papel || "familiar", parentesco || "Familiar"], (err3, result) => {
             if (err3) return cb(err3);
             cb(null, { ok: true, id: result.insertId });
           });
