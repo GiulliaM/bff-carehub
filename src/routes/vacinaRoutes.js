@@ -1,6 +1,6 @@
 import express from "express";
 import { cadastrarVacina, buscarVacinas } from "../controllers/vacinaController.js";
-import { middlewareAutenticacao } from "../middlewares/auth.js"; // Protegendo a rota
+import middlewareAutenticacao from "../middleware/middlewareAutenticacao.js"; 
 
 const router = express.Router();
 

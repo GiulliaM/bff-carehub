@@ -22,3 +22,15 @@ export const buscarPorEmail = (email, cb) => {
 export const buscarPorId = (id, cb) => {
   db.query("SELECT usuario_id, nome, email, tipo, telefone, created_at FROM usuarios WHERE usuario_id = ?", [id], cb);
 };
+
+export const buscarSenhaPorId = (id, cb) => {
+  import("../config/db.js").then((db) => {
+    db.default.query("SELECT senha_hash FROM usuarios WHERE usuario_id = ?", [id], cb);
+  });
+};
+
+export const atualizarSenha = (id, novaSenhaHash, cb) => {
+  import("../config/db.js").then((db) => {
+    db.default.query("UPDATE usuarios SET senha_hash = ? WHERE usuario_id = ?", [novaSenhaHash, id], cb);
+  });
+};

@@ -1,4 +1,5 @@
-import { criarUsuario, buscarPorEmail, buscarPorId, atualizarUsuario } from "../models/usuarioModel.js";
+import { criarUsuario, buscarPorEmail, buscarPorId, atualizarUsuario , buscarSenhaPorId, atualizarSenha} from "../models/usuarioModel.js";
+
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
@@ -19,7 +20,7 @@ export const cadastro = (req, res) => {
     return res.status(500).json({ message: "Erro de configuração do servidor. Contate o administrador." });
   }
 
-  buscarPorEmail(email, (err, results) => {
+  buscarPorEmail(email, async (err, results) => {
     if (err) {
       console.error("[cadastro] Erro ao buscar email:", err.message);
       return res.status(500).json({ message: "Erro ao verificar o e-mail. Tente novamente." });
@@ -30,7 +31,7 @@ export const cadastro = (req, res) => {
 
     let hash;
     try {
-      hash = bcrypt.hashSync(senha, 10);
+      hash = await bcrypt.hash(senha, 10);
     } catch (hashErr) {
       console.error("[cadastro] Erro ao hashear senha:", hashErr.message);
       return res.status(500).json({ message: "Erro interno ao processar senha." });
@@ -70,7 +71,7 @@ export const login = (req, res) => {
     return res.status(500).json({ message: "Erro de configuração do servidor." });
   }
 
-  buscarPorEmail(email, (err, results) => {
+  buscarPorEmail(email, async (err, results) => {
     if (err) {
       console.error("[login] Erro ao buscar usuário:", err.message);
       return res.status(500).json({ message: "Erro ao realizar login. Tente novamente." });
@@ -83,7 +84,7 @@ export const login = (req, res) => {
 
     let valid = false;
     try {
-      valid = bcrypt.compareSync(senha, user.senha_hash);
+      valid = await bcrypt.compare(senha, user.senha_hash);
     } catch (bcryptErr) {
       console.error("[login] Erro ao comparar senha:", bcryptErr.message);
       return res.status(500).json({ message: "Erro interno ao verificar senha." });
@@ -134,5 +135,42 @@ export const patchUsuario = (req, res) => {
   atualizarUsuario(id, changes, (err) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ message: "Usuário atualizado" });
+  });
+};
+
+export const alterarSenha = (req, res) => {
+  const usuarioId = req.user?.usuario_id;
+  const { senhaAtual, novaSenha } = req.body;
+
+  if (!senhaAtual || !novaSenha) {
+    return res.status(400).json({ message: "Senha atual e nova senha são obrigatórias." });
+  }
+
+  buscarSenhaPorId(usuarioId, async (err, results) => {
+    if (err) return res.status(500).json({ message: "Erro ao buscar dados do usuário." });
+    if (!results || results.length === 0) return res.status(404).json({ message: "Usuário não encontrado." });
+
+    const senhaHashBanco = results[0].senha_hash;
+
+    try {
+      // 1. Verifica se a senha atual está correta
+      const senhaValida = await bcrypt.compare(senhaAtual, senhaHashBanco);
+      if (!senhaValida) {
+        return res.status(401).json({ message: "A senha atual está incorreta." });
+      }
+
+      // 2. Criptografa a nova senha
+      const novoHash = await bcrypt.hash(novaSenha, 10);
+
+      // 3. Salva no banco
+      atualizarSenha(usuarioId, novoHash, (errUpdate) => {
+        if (errUpdate) return res.status(500).json({ message: "Erro ao atualizar a senha." });
+        res.json({ message: "Senha alterada com sucesso!" });
+      });
+
+    } catch (bcryptErr) {
+      console.error("[alterarSenha] Erro:", bcryptErr);
+      return res.status(500).json({ message: "Erro interno ao processar senhas." });
+    }
   });
 };

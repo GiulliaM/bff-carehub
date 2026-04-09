@@ -1,12 +1,9 @@
 import artigoModel from "../models/artigoModel.js";
 
-/**
- * Registra um novo artigo. 
- * Idealmente, deve haver um middleware antes para garantir que o usuário é 'cuidador'.
- */
-export const criarArtigo = (req, res) => {
+
+ export const criarArtigo = (req, res) => {
   const { titulo, subtitulo, conteudo, categoria, imagem_url } = req.body;
-  const autor_id = req.usuarioId; // Assumindo que o ID vem do token JWT/Middleware de Auth
+  const autor_id = req.user.usuario_id; 
 
   if (!titulo || !conteudo || !categoria) {
     return res.status(400).json({ error: "Título, conteúdo e categoria são obrigatórios." });
@@ -23,9 +20,7 @@ export const criarArtigo = (req, res) => {
   });
 };
 
-/**
- * Lista artigos com opção de filtro por categoria.
- */
+
 export const listarArtigos = (req, res) => {
   const { categoria } = req.query;
 
@@ -38,9 +33,7 @@ export const listarArtigos = (req, res) => {
   });
 };
 
-/**
- * Busca detalhes de um artigo específico.
- */
+
 export const buscarArtigoPorId = (req, res) => {
   const { id } = req.params;
 
@@ -56,12 +49,10 @@ export const buscarArtigoPorId = (req, res) => {
   });
 };
 
-/**
- * Deleta um artigo (Verifica se quem deleta é o autor).
- */
-export const deletarArtigo = (req, res) => {
+
+ export const deletarArtigo = (req, res) => {
   const { id } = req.params;
-  const autor_id = req.usuarioId;
+  const autor_id = req.user.usuario_id;
 
   artigoModel.deletarArtigo(id, autor_id, (err, result) => {
     if (err) {
