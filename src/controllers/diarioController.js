@@ -4,6 +4,8 @@ import {
   listarRegistrosPorUsuario,
   listarRegistrosPorPaciente,
   deletarRegistro,
+  atualizarComentario,
+  deletarItens,
 } from "../models/diarioModel.js";
 import { pacientePertenceAoUsuario } from "../models/pacienteModel.js";
 
@@ -56,6 +58,33 @@ export const buscarRegistros = (req, res) => {
       res.json(results || []);
     });
   }
+};
+
+export const atualizarRegistro = (req, res) => {
+  const { id } = req.params;
+  const { comentario, itens } = req.body;
+  const usuarioId = req.user.usuario_id;
+
+  atualizarComentario(id, usuarioId, comentario, (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Registro nao encontrado ou acesso negado." });
+    }
+
+    if (!Array.isArray(itens)) {
+      return res.json({ message: "Registro atualizado." });
+    }
+
+    deletarItens(id, (err2) => {
+      if (err2) return res.status(500).json({ error: err2.message });
+      if (itens.length === 0) return res.json({ message: "Registro atualizado." });
+
+      inserirItens(id, itens, (err3) => {
+        if (err3) return res.status(500).json({ error: err3.message });
+        res.json({ message: "Registro atualizado." });
+      });
+    });
+  });
 };
 
 export const excluirRegistro = (req, res) => {

@@ -79,6 +79,18 @@ export const listarRegistrosPorUsuario = (usuarioId, cb) => {
   });
 };
 
+export const atualizarComentario = (id, usuarioId, comentario, cb) => {
+  db.query(
+    "UPDATE diario_registros SET comentario=? WHERE registro_id=? AND usuario_id=?",
+    [comentario ?? null, id, usuarioId],
+    cb
+  );
+};
+
+export const deletarItens = (registroId, cb) => {
+  db.query("DELETE FROM diario_itens WHERE registro_id=?", [registroId], cb);
+};
+
 export const deletarRegistro = (id, usuarioId, cb) => {
   db.query(
     "DELETE FROM diario_registros WHERE registro_id = ? AND usuario_id = ?",

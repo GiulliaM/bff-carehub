@@ -1,6 +1,6 @@
 -- ==========================================================
--- CareHub - Schema completo v2.0
--- Multi-paciente, Grupo de cuidado, Diário categorizado
+-- CareHub - Schema completo v3.0 (sincronizado com produção)
+-- Atualizado em 2026-04-13 para refletir o estado real do VPS
 -- ==========================================================
 
 -- Usuários (familiar ou cuidador)
@@ -22,13 +22,24 @@ CREATE TABLE IF NOT EXISTS pacientes (
   idade INT,
   genero VARCHAR(50),
   observacoes TEXT,
+  fk_usuario_id INT NULL COMMENT 'campo legado — preferir grupo_cuidado',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   foto_url VARCHAR(500) NULL,
   criado_por INT NULL COMMENT 'usuario que cadastrou o paciente',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  data_nascimento DATE NULL,
+  tipo_sanguineo VARCHAR(10) NULL,
+  peso_kg DECIMAL(5,2) NULL,
+  altura_cm INT NULL,
+  restricoes_alimentares TEXT NULL,
+  informacoes_medicas TEXT NULL,
+  nome_cuidador_ativo VARCHAR(200) NULL,
+  mobilidade ENUM('Nenhuma','Reduzida','Cadeirante','Acamado') DEFAULT 'Nenhuma',
+  plano_saude_nome VARCHAR(200) NULL,
+  plano_saude_numero VARCHAR(100) NULL,
   FOREIGN KEY (criado_por) REFERENCES usuarios(usuario_id) ON DELETE SET NULL
 );
 
--- Grupo de cuidado: vincula usuarios a pacientes (substitui fk_usuario_id)
+-- Grupo de cuidado: vincula usuarios a pacientes
 -- Um paciente pode ter ate 5 membros; um usuario pode cuidar de ate 3 pacientes
 CREATE TABLE IF NOT EXISTS grupo_cuidado (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -37,6 +48,7 @@ CREATE TABLE IF NOT EXISTS grupo_cuidado (
   papel ENUM('dono','familiar','cuidador') DEFAULT 'familiar',
   status ENUM('Ativo','Pendente','Encerrado') DEFAULT 'Ativo',
   data_vinculo TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  parentesco VARCHAR(50) DEFAULT 'Familiar' NULL COMMENT 'ex: Filho, Sobrinho, Cônjuge',
   UNIQUE KEY uk_usuario_paciente (usuario_id, paciente_id),
   FOREIGN KEY (usuario_id) REFERENCES usuarios(usuario_id) ON DELETE CASCADE,
   FOREIGN KEY (paciente_id) REFERENCES pacientes(paciente_id) ON DELETE CASCADE
@@ -54,6 +66,7 @@ CREATE TABLE IF NOT EXISTS tarefas (
   concluida TINYINT(1) DEFAULT 0,
   hora_conclusao DATETIME NULL,
   dias_repeticao VARCHAR(255),
+  responsavel_id INT NULL COMMENT 'campo legado — preferir tarefa_responsaveis',
   grupo_repeticao VARCHAR(36) NULL COMMENT 'UUID para agrupar tarefas repetidas',
   paciente_id INT,
   criado_por INT NULL,
@@ -107,9 +120,10 @@ CREATE TABLE IF NOT EXISTS diario_registros (
   registro_id INT AUTO_INCREMENT PRIMARY KEY,
   data DATE,
   hora TIME,
+  atividades TEXT NULL COMMENT 'campo legado, preferir diario_itens',
+  comentario TEXT NULL,
   paciente_id INT,
   usuario_id INT,
-  comentario TEXT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (paciente_id) REFERENCES pacientes(paciente_id) ON DELETE CASCADE,
   FOREIGN KEY (usuario_id) REFERENCES usuarios(usuario_id) ON DELETE SET NULL
@@ -128,8 +142,6 @@ CREATE TABLE IF NOT EXISTS diario_itens (
 );
 CREATE INDEX idx_diario_itens_registro ON diario_itens (registro_id);
 CREATE INDEX idx_diario_itens_categoria ON diario_itens (categoria);
-
--- Indices para consultas frequentes
 CREATE INDEX idx_diario_registro_usuario ON diario_registros (registro_id, usuario_id);
 
 -- Modulo A: Perfil do Cuidador
@@ -192,7 +204,35 @@ CREATE TABLE IF NOT EXISTS convites_vinculo (
 CREATE INDEX idx_convites_codigo ON convites_vinculo (codigo);
 CREATE INDEX idx_convites_paciente ON convites_vinculo (paciente_id);
 
--- Manter tabela legada para compatibilidade durante migracao
+-- Artigos / conteúdo educativo
+CREATE TABLE IF NOT EXISTS artigos (
+  artigo_id INT AUTO_INCREMENT PRIMARY KEY,
+  titulo VARCHAR(255) NOT NULL,
+  subtitulo VARCHAR(500) NULL,
+  conteudo LONGTEXT NOT NULL,
+  categoria ENUM('Saúde','Higiene','Alimentação','Mobilidade','Lazer') NOT NULL,
+  autor_id INT NOT NULL,
+  imagem_url VARCHAR(500) NULL,
+  visualizacoes INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (autor_id) REFERENCES usuarios(usuario_id) ON DELETE CASCADE
+);
+CREATE INDEX idx_artigos_categoria ON artigos (categoria);
+CREATE INDEX idx_artigos_autor ON artigos (autor_id);
+
+-- Vacinas do paciente
+CREATE TABLE IF NOT EXISTS vacinas (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  paciente_id INT NOT NULL,
+  nome_vacina VARCHAR(100) NOT NULL,
+  data_aplicacao DATE NOT NULL,
+  unidade_saude VARCHAR(150) NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (paciente_id) REFERENCES pacientes(paciente_id) ON DELETE CASCADE
+);
+CREATE INDEX idx_vacinas_paciente ON vacinas (paciente_id);
+
+-- Tabela legada para compatibilidade durante migração
 CREATE TABLE IF NOT EXISTS vinculos_cuidador_paciente (
   id INT AUTO_INCREMENT PRIMARY KEY,
   cuidador_id INT NOT NULL,
