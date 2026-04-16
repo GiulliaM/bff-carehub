@@ -4,8 +4,9 @@ import db from "../config/db.js";
 const COLUNAS_PERMITIDAS = [
   "nome", "idade", "genero", "observacoes", "data_nascimento",
   "informacoes_medicas", "foto_url", "nome_cuidador_ativo",
-  "tipo_sanguineo", "peso_kg", "altura_cm", "restricoes_alimentares", 
-  "mobilidade", "plano_saude_nome", "plano_saude_numero"
+  "tipo_sanguineo", "peso_kg", "altura_cm", "restricoes_alimentares",
+  "mobilidade", "plano_saude_nome", "plano_saude_numero",
+  "responsavel_legal", "telefone_contato", "categorias_cuidado", "observacoes_rotina",
 ];
 
 export const atualizarPaciente = (id, changes, cb) => {
@@ -19,11 +20,10 @@ export const atualizarPaciente = (id, changes, cb) => {
 };
 
 export const criarPaciente = (paciente, cb) => {
-  // 2. SQL expandido para incluir os novos campos no cadastro inicial
   const sql = `
-    INSERT INTO pacientes 
-    (nome, idade, genero, observacoes, criado_por, data_nascimento, tipo_sanguineo, peso_kg, altura_cm, restricoes_alimentares, mobilidade, plano_saude_nome, plano_saude_numero) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO pacientes
+    (nome, idade, genero, observacoes, criado_por, data_nascimento, tipo_sanguineo, peso_kg, altura_cm, restricoes_alimentares, mobilidade, plano_saude_nome, plano_saude_numero, responsavel_legal, telefone_contato, categorias_cuidado, observacoes_rotina)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   const values = [
@@ -39,7 +39,11 @@ export const criarPaciente = (paciente, cb) => {
     paciente.restricoes_alimentares || null,
     paciente.mobilidade || 'Nenhuma',
     paciente.plano_saude_nome || null,
-    paciente.plano_saude_numero || null
+    paciente.plano_saude_numero || null,
+    paciente.responsavel_legal || null,
+    paciente.telefone_contato || null,
+    paciente.categorias_cuidado || null,
+    paciente.observacoes_rotina || null,
   ];
 
   db.query(sql, values, (err, result) => {
@@ -114,6 +118,43 @@ export const pacientePertenceAoUsuario = (pacienteId, usuarioId, cb) => {
       cb(null, results && results.length > 0);
     }
   );
+};
+
+export const usuarioEhDono = (pacienteId, usuarioId, cb) => {
+  db.query(
+    "SELECT 1 FROM grupo_cuidado WHERE paciente_id = ? AND usuario_id = ? AND papel = 'dono' AND status = 'Ativo'",
+    [pacienteId, usuarioId],
+    (err, results) => {
+      if (err) return cb(err);
+      cb(null, results && results.length > 0);
+    }
+  );
+};
+
+export const deletarPaciente = (pacienteId, cb) => {
+  // Deletar dados dependentes em ordem antes do paciente
+  db.query("DELETE di FROM diario_itens di JOIN diario_registros dr ON dr.registro_id = di.registro_id WHERE dr.paciente_id = ?", [pacienteId], (err) => {
+    if (err) return cb(err);
+    db.query("DELETE FROM diario_registros WHERE paciente_id = ?", [pacienteId], (err2) => {
+      if (err2) return cb(err2);
+      db.query("DELETE FROM medicamentos WHERE paciente_id = ?", [pacienteId], (err3) => {
+        if (err3) return cb(err3);
+        db.query("DELETE FROM tarefas WHERE paciente_id = ?", [pacienteId], (err4) => {
+          if (err4) return cb(err4);
+          db.query("DELETE FROM historico_medico WHERE paciente_id = ?", [pacienteId], (err5) => {
+            if (err5) return cb(err5);
+            db.query("DELETE FROM vacinas WHERE paciente_id = ?", [pacienteId], (err6) => {
+              if (err6) return cb(err6);
+              db.query("DELETE FROM grupo_cuidado WHERE paciente_id = ?", [pacienteId], (err7) => {
+                if (err7) return cb(err7);
+                db.query("DELETE FROM pacientes WHERE paciente_id = ?", [pacienteId], cb);
+              });
+            });
+          });
+        });
+      });
+    });
+  });
 };
 
 export const atualizar = (id, changes, cb) => {
