@@ -5,30 +5,30 @@ export const criarMedicamento = (data, callback) => {
     nome, dosagem, mg, qtd_comprimidos, horarios,
     concluido, inicio, duracao_days, uso_continuo, paciente_id,
     tipo_agendamento, intervalo_horas, data_fim, dias_semana,
-    grupo_repeticao,
+    grupo_repeticao, local_aplicacao,
   } = data;
 
   const horariosStr = Array.isArray(horarios) ? JSON.stringify(horarios) : horarios;
 
   const sql = `
-    INSERT INTO medicamentos 
+    INSERT INTO medicamentos
     (nome, dosagem, mg, qtd_comprimidos, horarios, concluido, inicio, duracao_days, uso_continuo, paciente_id,
-     tipo_agendamento, intervalo_horas, data_fim, dias_semana, grupo_repeticao)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     tipo_agendamento, intervalo_horas, data_fim, dias_semana, grupo_repeticao, local_aplicacao)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   db.query(sql, [
     nome, dosagem, mg || null, qtd_comprimidos || null,
     horariosStr, concluido, inicio, duracao_days, uso_continuo, paciente_id,
     tipo_agendamento || "manual", intervalo_horas, data_fim, dias_semana,
-    grupo_repeticao || null,
+    grupo_repeticao || null, local_aplicacao || null,
   ], callback);
 };
 
 const COLUNAS_PERMITIDAS = [
   "nome", "dosagem", "mg", "qtd_comprimidos", "horarios", "concluido",
   "hora_conclusao", "inicio", "duracao_days", "uso_continuo",
-  "tipo_agendamento", "intervalo_horas", "data_fim", "dias_semana",
+  "tipo_agendamento", "intervalo_horas", "data_fim", "dias_semana", "local_aplicacao",
 ];
 
 export const atualizarMedicamento = (id, data, callback) => {
