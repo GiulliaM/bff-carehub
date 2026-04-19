@@ -1,3 +1,4 @@
+import https from "https";
 import {
   criarRegistro as criarRegistroModel,
   inserirItens,
@@ -8,6 +9,28 @@ import {
   deletarItens,
 } from "../models/diarioModel.js";
 import { pacientePertenceAoUsuario } from "../models/pacienteModel.js";
+import { obterTokensGrupo } from "../models/usuarioModel.js";
+
+function enviarPushExpo(tokens, titulo, corpo) {
+  const messages = tokens.filter(Boolean).map((t) => ({
+    to: t, title: titulo, body: corpo, sound: "default", priority: "high",
+  }));
+  if (!messages.length) return;
+  const payload = JSON.stringify(messages);
+  const req = https.request({
+    hostname: "exp.host",
+    path: "/--/api/v2/push/send",
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      "Content-Length": Buffer.byteLength(payload),
+    },
+  }, (res) => { res.on("data", () => {}); });
+  req.on("error", (e) => console.error("Push error:", e.message));
+  req.write(payload);
+  req.end();
+}
 
 export const criarRegistro = (req, res) => {
   const r = req.body;
@@ -27,13 +50,28 @@ export const criarRegistro = (req, res) => {
       if (err2) return res.status(500).json({ error: err2.message });
 
       const registroId = rres.insertId;
+
+      const responder = () => {
+        // Notificar demais membros do grupo (fire-and-forget)
+        obterTokensGrupo(r.paciente_id, r.usuario_id, (_, membros) => {
+          if (!membros?.length) return;
+          enviarPushExpo(
+            membros.map((m) => m.push_token),
+            "Novo registro no Diário",
+            "Um novo registro foi adicionado ao diário de cuidados."
+          );
+        });
+      };
+
       if (itens && itens.length > 0) {
         inserirItens(registroId, itens, (err3) => {
           if (err3) console.error("Erro ao inserir itens do diario:", err3);
           res.status(201).json({ registro_id: registroId });
+          responder();
         });
       } else {
         res.status(201).json({ registro_id: registroId });
+        responder();
       }
     });
   });

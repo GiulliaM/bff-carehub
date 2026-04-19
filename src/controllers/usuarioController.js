@@ -1,4 +1,4 @@
-import { criarUsuario, buscarPorEmail, buscarPorId, atualizarUsuario , buscarSenhaPorId, atualizarSenha} from "../models/usuarioModel.js";
+import { criarUsuario, buscarPorEmail, buscarPorId, atualizarUsuario, buscarSenhaPorId, atualizarSenha, salvarPushToken } from "../models/usuarioModel.js";
 
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -135,6 +135,15 @@ export const patchUsuario = (req, res) => {
   atualizarUsuario(id, changes, (err) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ message: "Usuário atualizado" });
+  });
+};
+
+export const salvarPushTokenCtrl = (req, res) => {
+  const { push_token } = req.body;
+  if (!push_token) return res.status(400).json({ message: "push_token obrigatorio" });
+  salvarPushToken(req.user.usuario_id, push_token, (err) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ ok: true });
   });
 };
 

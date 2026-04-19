@@ -34,3 +34,18 @@ export const atualizarSenha = (id, novaSenhaHash, cb) => {
     db.default.query("UPDATE usuarios SET senha_hash = ? WHERE usuario_id = ?", [novaSenhaHash, id], cb);
   });
 };
+
+export const salvarPushToken = (usuarioId, token, cb) => {
+  db.query("UPDATE usuarios SET push_token = ? WHERE usuario_id = ?", [token, usuarioId], cb);
+};
+
+export const obterTokensGrupo = (pacienteId, excluirUsuarioId, cb) => {
+  db.query(
+    `SELECT u.push_token FROM usuarios u
+     JOIN grupo_cuidado gc ON gc.usuario_id = u.usuario_id
+     WHERE gc.paciente_id = ? AND gc.status = 'Ativo'
+       AND gc.usuario_id != ? AND u.push_token IS NOT NULL`,
+    [pacienteId, excluirUsuarioId],
+    cb
+  );
+};
