@@ -1,4 +1,9 @@
 import { criarUsuario, buscarPorEmail, buscarPorId, atualizarUsuario, buscarSenhaPorId, atualizarSenha, salvarPushToken } from "../models/usuarioModel.js";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -144,6 +149,25 @@ export const salvarPushTokenCtrl = (req, res) => {
   salvarPushToken(req.user.usuario_id, push_token, (err) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ ok: true });
+  });
+};
+
+export const uploadFoto = (req, res) => {
+  const id = req.params.id;
+  const usuarioId = req.user?.usuario_id;
+  if (Number(id) !== Number(usuarioId)) {
+    return res.status(403).json({ message: "Não é possível alterar foto de outro usuário" });
+  }
+  if (!req.file) {
+    return res.status(400).json({ message: "Nenhuma foto enviada." });
+  }
+
+  const baseUrl = process.env.BASE_URL || `https://legacyofthevaliant.com`;
+  const foto_url = `${baseUrl}/uploads/${req.file.filename}`;
+
+  atualizarUsuario(id, { foto_url }, (err) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ foto_url });
   });
 };
 
