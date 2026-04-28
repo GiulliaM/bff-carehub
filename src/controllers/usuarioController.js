@@ -104,8 +104,11 @@ export const login = (req, res) => {
         nome: user.nome,
         email: user.email,
         tipo: user.tipo,
+        telefone: user.telefone || null,
+        foto_url: user.foto_url || null,
       };
-      const token = jwt.sign(usuarioCompleto, process.env.JWT_SECRET, { expiresIn: "7d" });
+      const tokenPayload = { usuario_id: user.usuario_id, nome: user.nome, email: user.email, tipo: user.tipo };
+      const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, { expiresIn: "7d" });
       res.json({ usuario: usuarioCompleto, token });
     } catch (jwtErr) {
       console.error("[login] Erro ao gerar token:", jwtErr.message);
