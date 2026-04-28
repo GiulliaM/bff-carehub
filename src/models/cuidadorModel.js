@@ -84,7 +84,8 @@ export const salvarOuAtualizarPerfil = (usuarioId, data, cb) => {
  */
 export const listarParaBusca = (filtros, cb) => {
   let sql = `
-    SELECT p.id, p.usuario_id, p.bio, p.especialidades, p.preco_hora, p.cidade, p.bairro, p.foto_url, p.telefone, u.nome
+    SELECT p.id, p.usuario_id, p.bio, p.especialidades, p.preco_hora, p.cidade, p.bairro,
+           COALESCE(u.foto_url, p.foto_url) as foto_url, p.telefone, u.nome
     FROM perfil_cuidadores p
     JOIN usuarios u ON u.usuario_id = p.usuario_id
     WHERE p.disponivel_busca = 1
@@ -96,8 +97,8 @@ export const listarParaBusca = (filtros, cb) => {
     params.push("%" + filtros.especialidade.trim() + "%");
   }
   if (filtros.cidade && filtros.cidade.trim()) {
-    sql += " AND LOWER(TRIM(p.cidade)) = LOWER(TRIM(?))";
-    params.push(filtros.cidade.trim());
+    sql += " AND LOWER(TRIM(p.cidade)) LIKE LOWER(?)";
+    params.push("%" + filtros.cidade.trim() + "%");
   }
   if (filtros.bairro && filtros.bairro.trim()) {
     sql += " AND LOWER(TRIM(p.bairro)) LIKE LOWER(?)";
