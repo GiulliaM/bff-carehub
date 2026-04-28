@@ -1,4 +1,5 @@
 import { criarUsuario, buscarPorEmail, buscarPorId, atualizarUsuario, buscarSenhaPorId, atualizarSenha, salvarPushToken } from "../models/usuarioModel.js";
+import { salvarOuAtualizarPerfil } from "../models/cuidadorModel.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -139,6 +140,9 @@ export const patchUsuario = (req, res) => {
 
   atualizarUsuario(id, changes, (err) => {
     if (err) return res.status(500).json({ error: err.message });
+    if (req.user?.tipo === "cuidador" && changes.telefone !== undefined) {
+      salvarOuAtualizarPerfil(Number(id), { telefone: changes.telefone }, () => {});
+    }
     res.json({ message: "Usuário atualizado" });
   });
 };
