@@ -81,19 +81,29 @@ export const buscarMeusPacientes = (req, res) => {
 /**
  * GET /api/vinculos/cuidadores/:paciente_id
  * Lista cuidadores vinculados ao paciente.
- * Acesso: qualquer membro do grupo de cuidado.
+ * Acesso: dono do paciente (familiar) ou membro do grupo de cuidado.
  */
 export const buscarCuidadoresDoPaciente = (req, res) => {
   const pacienteId = req.params.paciente_id;
   const usuarioId = req.user.usuario_id;
 
-  usuarioNoGrupo(usuarioId, pacienteId, (err, pertence) => {
+  pacientePertenceAoUsuario(pacienteId, usuarioId, (err, ehDono) => {
     if (err) return res.status(500).json({ error: err.message });
-    if (!pertence) return res.status(403).json({ message: "Acesso negado a este paciente" });
+    if (ehDono) {
+      return listarMembrosDoGrupo(pacienteId, (err2, membros) => {
+        if (err2) return res.status(500).json({ error: err2.message });
+        res.json(membros || []);
+      });
+    }
 
-    listarMembrosDoGrupo(pacienteId, (err2, membros) => {
-      if (err2) return res.status(500).json({ error: err2.message });
-      res.json(membros || []);
+    usuarioNoGrupo(usuarioId, pacienteId, (err3, pertence) => {
+      if (err3) return res.status(500).json({ error: err3.message });
+      if (!pertence) return res.status(403).json({ message: "Acesso negado a este paciente" });
+
+      listarMembrosDoGrupo(pacienteId, (err4, membros) => {
+        if (err4) return res.status(500).json({ error: err4.message });
+        res.json(membros || []);
+      });
     });
   });
 };
