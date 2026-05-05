@@ -7,6 +7,7 @@ import {
   buscarMeusPacientes,
   desvincular,
   removerCuidador,
+  buscarCuidadoresDoPaciente,
 } from "../controllers/vinculoController.js";
 
 const router = express.Router();
@@ -15,6 +16,7 @@ router.post("/gerar-convite", middlewareAutenticacao, gerarConvite);
 router.get("/convite/:paciente_id", middlewareAutenticacao, buscarConvite);
 router.post("/aceitar", middlewareAutenticacao, aceitarConvite);
 router.get("/meus-pacientes", middlewareAutenticacao, buscarMeusPacientes);
+router.get("/cuidadores/:paciente_id", middlewareAutenticacao, buscarCuidadoresDoPaciente);
 router.delete("/cuidador/:cuidador_id/paciente/:paciente_id", middlewareAutenticacao, removerCuidador);
 router.delete("/:paciente_id", middlewareAutenticacao, desvincular);
 

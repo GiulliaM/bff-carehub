@@ -1,5 +1,6 @@
 import { criarConvite, getConviteAtivoPorPaciente, aceitarConvite as aceitarConviteModel, listarPacientesDoCuidador, desvincularCuidador, desvincularCuidadorDoPaciente } from "../models/vinculoModel.js";
 import { pacientePertenceAoUsuario, buscarPacientePorId } from "../models/pacienteModel.js";
+import { listarMembrosDoGrupo, usuarioNoGrupo } from "../models/grupoCuidadoModel.js";
 
 /**
  * POST /api/vinculos/gerar-convite
@@ -74,6 +75,26 @@ export const buscarMeusPacientes = (req, res) => {
   listarPacientesDoCuidador(req.user.usuario_id, (err, list) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(list || []);
+  });
+};
+
+/**
+ * GET /api/vinculos/cuidadores/:paciente_id
+ * Lista cuidadores vinculados ao paciente.
+ * Acesso: qualquer membro do grupo de cuidado.
+ */
+export const buscarCuidadoresDoPaciente = (req, res) => {
+  const pacienteId = req.params.paciente_id;
+  const usuarioId = req.user.usuario_id;
+
+  usuarioNoGrupo(usuarioId, pacienteId, (err, pertence) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!pertence) return res.status(403).json({ message: "Acesso negado a este paciente" });
+
+    listarMembrosDoGrupo(pacienteId, (err2, membros) => {
+      if (err2) return res.status(500).json({ error: err2.message });
+      res.json(membros || []);
+    });
   });
 };
 
