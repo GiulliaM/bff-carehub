@@ -82,6 +82,34 @@ export const aceitarConvite = (codigo, cuidadorId, cb) => {
 };
 
 /**
+ * Cuidador se desvincula de um paciente (seta status Inativo).
+ */
+export const desvincularCuidador = (cuidadorId, pacienteId, cb) => {
+  db.query(
+    "UPDATE grupo_cuidado SET status = 'Inativo' WHERE usuario_id = ? AND paciente_id = ? AND status = 'Ativo'",
+    [cuidadorId, pacienteId],
+    (err, result) => {
+      if (err) return cb(err);
+      cb(null, result);
+    }
+  );
+};
+
+/**
+ * Familiar remove um cuidador específico de seu paciente.
+ */
+export const desvincularCuidadorDoPaciente = (cuidadorId, pacienteId, cb) => {
+  db.query(
+    "UPDATE grupo_cuidado SET status = 'Inativo' WHERE usuario_id = ? AND paciente_id = ? AND status = 'Ativo'",
+    [cuidadorId, pacienteId],
+    (err, result) => {
+      if (err) return cb(err);
+      cb(null, result);
+    }
+  );
+};
+
+/**
  * Lista pacientes vinculados ao cuidador (status Ativo).
  */
 export const listarPacientesDoCuidador = (cuidadorId, cb) => {

@@ -1,4 +1,4 @@
-import { criarConvite, getConviteAtivoPorPaciente, aceitarConvite as aceitarConviteModel, listarPacientesDoCuidador } from "../models/vinculoModel.js";
+import { criarConvite, getConviteAtivoPorPaciente, aceitarConvite as aceitarConviteModel, listarPacientesDoCuidador, desvincularCuidador, desvincularCuidadorDoPaciente } from "../models/vinculoModel.js";
 import { pacientePertenceAoUsuario, buscarPacientePorId } from "../models/pacienteModel.js";
 
 /**
@@ -74,5 +74,42 @@ export const buscarMeusPacientes = (req, res) => {
   listarPacientesDoCuidador(req.user.usuario_id, (err, list) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(list || []);
+  });
+};
+
+/**
+ * DELETE /api/vinculos/:paciente_id
+ * Cuidador se desvincula de um paciente.
+ * Acesso: cuidador logado.
+ */
+export const desvincular = (req, res) => {
+  const pacienteId = req.params.paciente_id;
+  const cuidadorId = req.user.usuario_id;
+
+  desvincularCuidador(cuidadorId, pacienteId, (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (result.affectedRows === 0) return res.status(404).json({ message: "Vínculo não encontrado" });
+    res.json({ message: "Desvinculado com sucesso" });
+  });
+};
+
+/**
+ * DELETE /api/vinculos/cuidador/:cuidador_id/paciente/:paciente_id
+ * Familiar remove um cuidador do seu paciente.
+ * Acesso: dono do paciente (familiar).
+ */
+export const removerCuidador = (req, res) => {
+  const { cuidador_id, paciente_id } = req.params;
+  const usuarioId = req.user.usuario_id;
+
+  pacientePertenceAoUsuario(paciente_id, usuarioId, (err, pode) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!pode) return res.status(403).json({ message: "Acesso negado a este paciente" });
+
+    desvincularCuidadorDoPaciente(cuidador_id, paciente_id, (err2, result) => {
+      if (err2) return res.status(500).json({ error: err2.message });
+      if (result.affectedRows === 0) return res.status(404).json({ message: "Vínculo não encontrado" });
+      res.json({ message: "Cuidador removido com sucesso" });
+    });
   });
 };
