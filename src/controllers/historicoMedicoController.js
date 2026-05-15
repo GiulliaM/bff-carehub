@@ -1,11 +1,5 @@
 import { usuarioPodeEditarPaciente, buscarPorPacienteId, salvarOuAtualizar } from "../models/historicoMedicoModel.js";
 
-/**
- * GET /api/pacientes/:id/historico-medico
- * Retorna o histórico médico do paciente.
- * Acesso: dono do paciente (familiar) ou cuidador vinculado (status Ativo).
- * Inclui ultima_alteracao_nome e ultima_alteracao_em.
- */
 export const buscarHistorico = (req, res) => {
   const pacienteId = req.params.id;
   const usuarioId = req.user.usuario_id;

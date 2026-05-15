@@ -83,7 +83,7 @@ export const buscarMedicamentoPorId = (req, res) => {
 
   db.query("SELECT * FROM medicamentos WHERE medicamento_id = ?", [id], (err, rows) => {
     if (err) return res.status(500).json({ error: "Erro ao buscar medicamento" });
-    if (!rows || rows.length === 0) return res.status(404).json({ error: "Medicamento nao encontrado" });
+    if (!rows || rows.length === 0) return res.status(404).json({ error: "Medicamento não encontrado" });
 
     const med = rows[0];
     pacientePertenceAoUsuario(med.paciente_id, usuarioId, (err2, pertence) => {
@@ -106,7 +106,7 @@ export const criarMedicamentoRota = (req, res) => {
   const pacienteId = req.body?.paciente_id;
   const usuarioId = req.user.usuario_id;
   if (!pacienteId) {
-    return res.status(400).json({ error: "paciente_id e obrigatorio" });
+    return res.status(400).json({ error: "paciente_id é obrigatório" });
   }
   pacientePertenceAoUsuario(pacienteId, usuarioId, (err, pertence) => {
     if (err) return res.status(500).json({ error: "Erro ao verificar permissao" });
@@ -133,7 +133,7 @@ export const atualizarMedicamentoRota = (req, res) => {
 
   db.query("SELECT * FROM medicamentos WHERE medicamento_id = ?", [id], (err, rows) => {
     if (err) return res.status(500).json({ error: "Erro ao buscar medicamento" });
-    if (!rows || rows.length === 0) return res.status(404).json({ error: "Medicamento nao encontrado" });
+    if (!rows || rows.length === 0) return res.status(404).json({ error: "Medicamento não encontrado" });
 
     pacientePertenceAoUsuario(rows[0].paciente_id, usuarioId, (err2, pertence) => {
       if (err2) return res.status(500).json({ error: "Erro ao verificar permissao" });
@@ -147,7 +147,7 @@ export const atualizarMedicamentoRota = (req, res) => {
       } else {
         medicamentoModel.atualizarMedicamento(id, dados, (err3, result) => {
           if (err3) return res.status(500).json({ error: "Erro ao atualizar medicamento" });
-          if (result.affectedRows === 0) return res.status(404).json({ error: "Medicamento nao encontrado" });
+          if (result.affectedRows === 0) return res.status(404).json({ error: "Medicamento não encontrado" });
           res.json({ message: "Medicamento atualizado com sucesso!" });
         });
       }
@@ -162,7 +162,7 @@ export const alternarMedicamentoConcluido = (req, res) => {
 
   db.query("SELECT paciente_id FROM medicamentos WHERE medicamento_id = ?", [id], (err, rows) => {
     if (err) return res.status(500).json({ error: "Erro ao buscar medicamento" });
-    if (!rows || rows.length === 0) return res.status(404).json({ error: "Medicamento nao encontrado" });
+    if (!rows || rows.length === 0) return res.status(404).json({ error: "Medicamento não encontrado" });
 
     pacientePertenceAoUsuario(rows[0].paciente_id, usuarioId, (err2, pertence) => {
       if (err2) return res.status(500).json({ error: "Erro ao verificar permissao" });
@@ -204,12 +204,12 @@ export const toggleDose = (req, res) => {
   const usuarioId = req.user.usuario_id;
 
   if (!data || !horario || tomado === undefined) {
-    return res.status(400).json({ error: "data, horario e tomado sao obrigatorios" });
+    return res.status(400).json({ error: "data, horario e tomado são obrigatórios" });
   }
 
   db.query("SELECT paciente_id FROM medicamentos WHERE medicamento_id = ?", [id], (err, rows) => {
     if (err) return res.status(500).json({ error: "Erro ao buscar medicamento" });
-    if (!rows || rows.length === 0) return res.status(404).json({ error: "Medicamento nao encontrado" });
+    if (!rows || rows.length === 0) return res.status(404).json({ error: "Medicamento não encontrado" });
 
     pacientePertenceAoUsuario(rows[0].paciente_id, usuarioId, (err2, pertence) => {
       if (err2) return res.status(500).json({ error: "Erro ao verificar permissao" });
@@ -322,7 +322,7 @@ export const excluirMedicamento = (req, res) => {
 
   db.query("SELECT paciente_id FROM medicamentos WHERE medicamento_id = ?", [id], (err, rows) => {
     if (err) return res.status(500).json({ error: "Erro ao excluir medicamento" });
-    if (!rows || rows.length === 0) return res.status(404).json({ error: "Medicamento nao encontrado" });
+    if (!rows || rows.length === 0) return res.status(404).json({ error: "Medicamento não encontrado" });
 
     pacientePertenceAoUsuario(rows[0].paciente_id, usuarioId, (err2, pertence) => {
       if (err2) return res.status(500).json({ error: "Erro ao verificar permissao" });
@@ -330,7 +330,7 @@ export const excluirMedicamento = (req, res) => {
 
       db.query("DELETE FROM medicamentos WHERE medicamento_id = ?", [id], (err3, result) => {
         if (err3) return res.status(500).json({ error: "Erro ao excluir medicamento" });
-        if (result.affectedRows === 0) return res.status(404).json({ error: "Medicamento nao encontrado" });
+        if (result.affectedRows === 0) return res.status(404).json({ error: "Medicamento não encontrado" });
         res.json({ message: "Medicamento excluido com sucesso!" });
       });
     });

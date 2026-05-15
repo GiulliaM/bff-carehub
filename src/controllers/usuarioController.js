@@ -152,7 +152,7 @@ export const patchUsuario = (req, res) => {
 
 export const salvarPushTokenCtrl = (req, res) => {
   const { push_token } = req.body;
-  if (!push_token) return res.status(400).json({ message: "push_token obrigatorio" });
+  if (!push_token) return res.status(400).json({ message: "push_token obrigatório" });
   salvarPushToken(req.user.usuario_id, push_token, (err) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ ok: true });
@@ -169,7 +169,7 @@ export const uploadFoto = (req, res) => {
     return res.status(400).json({ message: "Nenhuma foto enviada." });
   }
 
-  const baseUrl = process.env.BASE_URL || `https://legacyofthevaliant.com`;
+  const baseUrl = process.env.BASE_URL;
   const foto_url = `${baseUrl}/uploads/${req.file.filename}`;
 
   atualizarUsuario(id, { foto_url }, (err) => {
@@ -193,16 +193,13 @@ export const alterarSenha = (req, res) => {
     const senhaHashBanco = results[0].senha_hash;
 
     try {
-      // 1. Verifica se a senha atual está correta
       const senhaValida = await bcrypt.compare(senhaAtual, senhaHashBanco);
       if (!senhaValida) {
         return res.status(401).json({ message: "A senha atual está incorreta." });
       }
 
-      // 2. Criptografa a nova senha
       const novoHash = await bcrypt.hash(novaSenha, 10);
 
-      // 3. Salva no banco
       atualizarSenha(usuarioId, novoHash, (errUpdate) => {
         if (errUpdate) return res.status(500).json({ message: "Erro ao atualizar a senha." });
         res.json({ message: "Senha alterada com sucesso!" });

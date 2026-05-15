@@ -1,9 +1,5 @@
 import { buscarPorUsuarioId, salvarOuAtualizarPerfil, listarParaBusca } from "../models/cuidadorModel.js";
 
-/**
- * GET /api/cuidador/perfil
- * Retorna o perfil do cuidador logado (apenas tipo cuidador).
- */
 export const buscarMeuPerfil = (req, res) => {
   if (req.user.tipo !== "cuidador") {
     return res.status(403).json({ message: "Acesso restrito a cuidadores" });

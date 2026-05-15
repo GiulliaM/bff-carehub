@@ -39,7 +39,7 @@ export const criarRegistro = (req, res) => {
   delete r.itens;
 
   if (!r.paciente_id) {
-    return res.status(400).json({ message: "paciente_id obrigatorio" });
+    return res.status(400).json({ message: "paciente_id obrigatório" });
   }
 
   pacientePertenceAoUsuario(r.paciente_id, r.usuario_id, (err, pertence) => {
@@ -106,7 +106,7 @@ export const atualizarRegistro = (req, res) => {
   atualizarComentario(id, usuarioId, comentario, (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Registro nao encontrado ou acesso negado." });
+      return res.status(404).json({ message: "Registro não encontrado ou acesso negado." });
     }
 
     if (!Array.isArray(itens)) {
@@ -132,7 +132,7 @@ export const excluirRegistro = (req, res) => {
   deletarRegistro(id, usuarioId, (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Registro nao encontrado ou acesso negado" });
+      return res.status(404).json({ message: "Registro não encontrado ou acesso negado" });
     }
     res.json({ message: "Registro excluido" });
   });

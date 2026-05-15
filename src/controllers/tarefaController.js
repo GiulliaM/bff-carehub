@@ -10,7 +10,7 @@ export const buscarTarefas = (req, res) => {
   const usuarioId = req.user?.usuario_id;
 
   if (!paciente_id) {
-    return res.status(400).json({ message: "ID do paciente e obrigatorio" });
+    return res.status(400).json({ message: "ID do paciente é obrigatório" });
   }
 
   pacientePertenceAoUsuario(paciente_id, usuarioId, (err, pertence) => {
@@ -50,7 +50,7 @@ export const criarTarefa = (req, res) => {
   const responsavelIds = tarefa.responsavel_ids;
 
   if (!tarefa.titulo || !tarefa.paciente_id) {
-    return res.status(400).json({ message: "Campos obrigatorios ausentes" });
+    return res.status(400).json({ message: "Campos obrigatórios ausentes" });
   }
 
   tarefa.criado_por = usuarioId;

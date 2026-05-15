@@ -20,7 +20,7 @@ export const atualizarPacienteRota = (req, res) => {
 
   buscarPacientePorIdModel(id, (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
-    if (!results || results.length === 0) return res.status(404).json({ message: "Paciente nao encontrado" });
+    if (!results || results.length === 0) return res.status(404).json({ message: "Paciente não encontrado" });
 
     pacientePertenceAoUsuario(id, usuarioId, (err2, pode) => {
       if (err2) return res.status(500).json({ error: err2.message });
@@ -61,7 +61,7 @@ export const deletarPacienteRota = (req, res) => {
 
   buscarPacientePorIdModel(id, (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
-    if (!results || results.length === 0) return res.status(404).json({ message: "Paciente nao encontrado" });
+    if (!results || results.length === 0) return res.status(404).json({ message: "Paciente não encontrado" });
 
     usuarioEhDono(id, usuarioId, (err2, ehDono) => {
       if (err2) return res.status(500).json({ error: err2.message });
@@ -81,7 +81,7 @@ export const buscarPacientePorId = (req, res) => {
 
   buscarPacientePorIdModel(id, (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
-    if (!results || results.length === 0) return res.status(404).json({ message: "Paciente nao encontrado" });
+    if (!results || results.length === 0) return res.status(404).json({ message: "Paciente não encontrado" });
 
     const paciente = results[0];
     pacientePertenceAoUsuario(id, usuarioId, (err2, pode) => {

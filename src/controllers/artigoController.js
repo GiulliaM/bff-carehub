@@ -1,17 +1,14 @@
-import artigoModel from "../models/artigoModel.js";
+import { criarArtigo as criarArtigoModel, listarArtigos as listarArtigosModel, buscarArtigoPorId as buscarArtigoPorIdModel, deletarArtigo as deletarArtigoModel } from "../models/artigoModel.js";
 
-
- export const criarArtigo = (req, res) => {
+export const criarArtigo = (req, res) => {
   const { titulo, subtitulo, conteudo, categoria, imagem_url } = req.body;
-  const autor_id = req.user.usuario_id; 
+  const autor_id = req.user.usuario_id;
 
   if (!titulo || !conteudo || !categoria) {
     return res.status(400).json({ error: "Título, conteúdo e categoria são obrigatórios." });
   }
 
-  const novoArtigo = { titulo, subtitulo, conteudo, categoria, autor_id, imagem_url };
-
-  artigoModel.criarArtigo(novoArtigo, (err, result) => {
+  criarArtigoModel({ titulo, subtitulo, conteudo, categoria, autor_id, imagem_url }, (err, result) => {
     if (err) {
       console.error("Erro ao criar artigo:", err);
       return res.status(500).json({ error: "Erro interno ao salvar o artigo." });
@@ -20,11 +17,10 @@ import artigoModel from "../models/artigoModel.js";
   });
 };
 
-
 export const listarArtigos = (req, res) => {
   const { categoria } = req.query;
 
-  artigoModel.listarArtigos({ categoria }, (err, results) => {
+  listarArtigosModel({ categoria }, (err, results) => {
     if (err) {
       console.error("Erro ao listar artigos:", err);
       return res.status(500).json({ error: "Erro ao buscar artigos." });
@@ -33,11 +29,10 @@ export const listarArtigos = (req, res) => {
   });
 };
 
-
 export const buscarArtigoPorId = (req, res) => {
   const { id } = req.params;
 
-  artigoModel.buscarArtigoPorId(id, (err, artigo) => {
+  buscarArtigoPorIdModel(id, (err, artigo) => {
     if (err) {
       console.error("Erro ao buscar artigo:", err);
       return res.status(500).json({ error: "Erro ao buscar o conteúdo." });
@@ -49,12 +44,11 @@ export const buscarArtigoPorId = (req, res) => {
   });
 };
 
-
- export const deletarArtigo = (req, res) => {
+export const deletarArtigo = (req, res) => {
   const { id } = req.params;
   const autor_id = req.user.usuario_id;
 
-  artigoModel.deletarArtigo(id, autor_id, (err, result) => {
+  deletarArtigoModel(id, autor_id, (err, result) => {
     if (err) {
       return res.status(500).json({ error: "Erro ao deletar o artigo." });
     }
@@ -63,11 +57,4 @@ export const buscarArtigoPorId = (req, res) => {
     }
     res.json({ message: "Artigo removido com sucesso." });
   });
-};
-
-export default {
-  criarArtigo,
-  listarArtigos,
-  buscarArtigoPorId,
-  deletarArtigo
 };
