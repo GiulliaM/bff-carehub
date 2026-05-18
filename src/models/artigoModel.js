@@ -2,8 +2,8 @@ import db from "../config/db.js";
 
 export const criarArtigo = (artigo, cb) => {
   const sql = `
-    INSERT INTO artigos (titulo, subtitulo, conteudo, categoria, autor_id, imagem_url)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO artigos (titulo, subtitulo, conteudo, categoria, autor_id, imagem_url, fonte_url)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `;
   const values = [
     artigo.titulo,
@@ -11,7 +11,8 @@ export const criarArtigo = (artigo, cb) => {
     artigo.conteudo,
     artigo.categoria,
     artigo.autor_id,
-    artigo.imagem_url || null
+    artigo.imagem_url || null,
+    artigo.fonte_url || null,
   ];
 
   db.query(sql, values, (err, result) => {

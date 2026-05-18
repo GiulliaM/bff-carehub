@@ -1,14 +1,14 @@
 import { criarArtigo as criarArtigoModel, listarArtigos as listarArtigosModel, buscarArtigoPorId as buscarArtigoPorIdModel, deletarArtigo as deletarArtigoModel } from "../models/artigoModel.js";
 
 export const criarArtigo = (req, res) => {
-  const { titulo, subtitulo, conteudo, categoria, imagem_url } = req.body;
+  const { titulo, subtitulo, conteudo, categoria, imagem_url, fonte_url } = req.body;
   const autor_id = req.user.usuario_id;
 
   if (!titulo || !conteudo || !categoria) {
     return res.status(400).json({ error: "Título, conteúdo e categoria são obrigatórios." });
   }
 
-  criarArtigoModel({ titulo, subtitulo, conteudo, categoria, autor_id, imagem_url }, (err, result) => {
+  criarArtigoModel({ titulo, subtitulo, conteudo, categoria, autor_id, imagem_url, fonte_url }, (err, result) => {
     if (err) {
       console.error("Erro ao criar artigo:", err);
       return res.status(500).json({ error: "Erro interno ao salvar o artigo." });
