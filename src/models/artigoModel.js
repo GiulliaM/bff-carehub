@@ -23,11 +23,11 @@ export const criarArtigo = (artigo, cb) => {
 
 export const listarArtigos = (filtros, cb) => {
   let sql = `
-    SELECT a.*, u.nome as nome_autor, u.foto_url as foto_autor
+    SELECT a.*, COALESCE(u.nome, 'Equipe CareHub') as nome_autor, u.foto_url as foto_autor
     FROM artigos a
-    JOIN usuarios u ON a.autor_id = u.usuario_id
+    LEFT JOIN usuarios u ON a.autor_id = u.usuario_id
   `;
-  
+
   const values = [];
   if (filtros.categoria) {
     sql += " WHERE a.categoria = ?";
@@ -43,9 +43,9 @@ export const buscarArtigoPorId = (id, cb) => {
   db.query("UPDATE artigos SET visualizacoes = visualizacoes + 1 WHERE artigo_id = ?", [id]);
 
   const sql = `
-    SELECT a.*, u.nome as nome_autor, u.foto_url as foto_autor, u.telefone as contato_autor
+    SELECT a.*, COALESCE(u.nome, 'Equipe CareHub') as nome_autor, u.foto_url as foto_autor, u.telefone as contato_autor
     FROM artigos a
-    JOIN usuarios u ON a.autor_id = u.usuario_id
+    LEFT JOIN usuarios u ON a.autor_id = u.usuario_id
     WHERE a.artigo_id = ?
   `;
   db.query(sql, [id], (err, results) => {
