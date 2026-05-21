@@ -169,8 +169,8 @@ export const uploadFoto = (req, res) => {
     return res.status(400).json({ message: "Nenhuma foto enviada." });
   }
 
-  const baseUrl = process.env.BASE_URL;
-  const foto_url = `${baseUrl}/uploads/${req.file.filename}`;
+  const rawBase = (process.env.BASE_URL || '').replace(/\/api\/?$/, '').replace(/\/$/, '');
+  const foto_url = `${rawBase}/uploads/${req.file.filename}`;
 
   atualizarUsuario(id, { foto_url }, (err) => {
     if (err) return res.status(500).json({ error: err.message });
