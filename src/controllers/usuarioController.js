@@ -169,7 +169,11 @@ export const uploadFoto = (req, res) => {
     return res.status(400).json({ message: "Nenhuma foto enviada." });
   }
 
-  const rawBase = (process.env.BASE_URL || '').replace(/\/api\/?$/, '').replace(/\/$/, '');
+  const proto = req.get('x-forwarded-proto') || req.protocol;
+  const host = req.get('x-forwarded-host') || req.get('host');
+  const rawBase = process.env.BASE_URL
+    ? process.env.BASE_URL.replace(/\/api\/?$/, '').replace(/\/$/, '')
+    : `${proto}://${host}`;
   const foto_url = `${rawBase}/uploads/${req.file.filename}`;
 
   atualizarUsuario(id, { foto_url }, (err) => {
