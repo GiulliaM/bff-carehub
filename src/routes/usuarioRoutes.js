@@ -4,7 +4,7 @@ import { cadastro, login, perfil, patchUsuario, alterarSenha, salvarPushTokenCtr
 import middlewareAutenticacao from "../middleware/middlewareAutenticacao.js";
 
 const storage = multer.memoryStorage();
-const upload = multer({ storage, limits: { fileSize: 20 * 1024 * 1024 } });
+const upload = multer({ storage, limits: { fileSize: 50 * 1024 * 1024 } });
 
 const router = express.Router();
 router.post("/cadastro", cadastro);
