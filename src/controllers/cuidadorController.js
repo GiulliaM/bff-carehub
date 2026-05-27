@@ -14,11 +14,6 @@ export const buscarMeuPerfil = (req, res) => {
   });
 };
 
-/**
- * POST /api/cuidador/perfil
- * Cria ou atualiza o perfil do cuidador logado (apenas tipo cuidador).
- * Body: bio, especialidades (array), preco_hora, cidade, bairro, foto_url, telefone, disponivel_busca (boolean).
- */
 export const salvarMeuPerfil = (req, res) => {
   if (req.user.tipo !== "cuidador") {
     return res.status(403).json({ message: "Acesso restrito a cuidadores" });
@@ -31,12 +26,6 @@ export const salvarMeuPerfil = (req, res) => {
   });
 };
 
-/**
- * GET /api/cuidadores/busca
- * Lista cuidadores disponíveis para a busca (marketplace).
- * Query: especialidade, cidade, bairro (opcionais).
- * Acesso: apenas usuários do tipo "familiar".
- */
 export const buscarCuidadoresRota = (req, res) => {
   if (req.user.tipo !== "familiar") {
     return res.status(403).json({ message: "Acesso restrito a familiares" });

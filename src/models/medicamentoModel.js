@@ -57,9 +57,7 @@ export const alternarMedicamento = (id, concluido, callback) => {
   );
 };
 
-/**
- * Atualiza em lote medicamentos do mesmo grupo_repeticao que ainda nao foram concluidos.
- */
+// atualiza em lote, ignora os ja concluidos
 export const atualizarGrupo = (grupoRepeticao, medId, data, callback) => {
   const keys = Object.keys(data).filter((k) => COLUNAS_PERMITIDAS.includes(k));
   if (keys.length === 0 || !grupoRepeticao) return callback(null, { affectedRows: 0 });

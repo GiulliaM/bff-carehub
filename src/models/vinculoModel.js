@@ -4,10 +4,7 @@ function gerarCodigo6() {
   return String(Math.floor(100000 + Math.random() * 900000));
 }
 
-/**
- * Cria um convite de vínculo para o paciente (código 6 dígitos, válido 24h).
- * Invalida convites anteriores não usados do mesmo paciente.
- */
+// invalida convites anteriores antes de criar novo
 export const criarConvite = (pacienteId, usuarioId, cb) => {
   const codigo = gerarCodigo6();
   const expiraEm = new Date(Date.now() + 24 * 60 * 60 * 1000)
@@ -32,9 +29,6 @@ export const criarConvite = (pacienteId, usuarioId, cb) => {
   );
 };
 
-/**
- * Retorna o convite ativo (não usado, não expirado) do paciente, se existir.
- */
 export const getConviteAtivoPorPaciente = (pacienteId, cb) => {
   const sql = `
     SELECT codigo, expira_em, created_at
@@ -48,9 +42,7 @@ export const getConviteAtivoPorPaciente = (pacienteId, cb) => {
   });
 };
 
-/**
- * Aceita o convite: busca por código, valida (não usado, não expirado), cria vínculo, marca convite como usado.
- */
+// valida codigo, cria vinculo no grupo_cuidado e marca convite como usado
 export const aceitarConvite = (codigo, cuidadorId, cb) => {
   const codigoLimpo = String(codigo).trim().replace(/\D/g, "").slice(0, 6);
   if (codigoLimpo.length !== 6) return cb(null, { error: "Código inválido" });
@@ -81,9 +73,7 @@ export const aceitarConvite = (codigo, cuidadorId, cb) => {
   });
 };
 
-/**
- * Cuidador se desvincula de um paciente (seta status Inativo).
- */
+// soft delete — seta status Inativo
 export const desvincularCuidador = (cuidadorId, pacienteId, cb) => {
   db.query(
     "UPDATE grupo_cuidado SET status = 'Inativo' WHERE usuario_id = ? AND paciente_id = ? AND status = 'Ativo'",
@@ -95,9 +85,6 @@ export const desvincularCuidador = (cuidadorId, pacienteId, cb) => {
   );
 };
 
-/**
- * Familiar remove um cuidador específico de seu paciente.
- */
 export const desvincularCuidadorDoPaciente = (cuidadorId, pacienteId, cb) => {
   db.query(
     "UPDATE grupo_cuidado SET status = 'Inativo' WHERE usuario_id = ? AND paciente_id = ? AND status = 'Ativo'",
@@ -109,9 +96,6 @@ export const desvincularCuidadorDoPaciente = (cuidadorId, pacienteId, cb) => {
   );
 };
 
-/**
- * Lista pacientes vinculados ao cuidador (status Ativo).
- */
 export const listarPacientesDoCuidador = (cuidadorId, cb) => {
   const sql = `
     SELECT p.paciente_id, p.nome, p.idade, p.genero, gc.data_vinculo

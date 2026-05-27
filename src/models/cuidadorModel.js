@@ -1,8 +1,5 @@
 import db from "../config/db.js";
 
-/**
- * Busca perfil do cuidador pelo usuario_id (um para um).
- */
 export const buscarPorUsuarioId = (usuarioId, cb) => {
   const sql = `
     SELECT p.*, u.nome
@@ -35,10 +32,7 @@ const COLUNAS_PERFIL = [
   "disponivel_busca",
 ];
 
-/**
- * Cria ou atualiza perfil do cuidador (upsert).
- * Só permite colunas da whitelist.
- */
+// upsert — so colunas da whitelist
 export const salvarOuAtualizarPerfil = (usuarioId, data, cb) => {
   const allowed = {};
   COLUNAS_PERFIL.forEach((col) => {
@@ -78,10 +72,7 @@ export const salvarOuAtualizarPerfil = (usuarioId, data, cb) => {
   });
 };
 
-/**
- * Busca cuidadores para o marketplace (apenas disponíveis).
- * Filtros: especialidade (uma tag contida no JSON), cidade, bairro.
- */
+// filtra especialidade por LIKE no JSON serializado
 export const listarParaBusca = (filtros, cb) => {
   let sql = `
     SELECT p.id, p.usuario_id, p.bio, p.especialidades, p.preco_hora, p.cidade, p.bairro,

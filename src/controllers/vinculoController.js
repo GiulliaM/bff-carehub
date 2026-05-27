@@ -2,11 +2,6 @@ import { criarConvite, getConviteAtivoPorPaciente, aceitarConvite as aceitarConv
 import { pacientePertenceAoUsuario, buscarPacientePorId } from "../models/pacienteModel.js";
 import { listarMembrosDoGrupo, usuarioNoGrupo } from "../models/grupoCuidadoModel.js";
 
-/**
- * POST /api/vinculos/gerar-convite
- * Body: { paciente_id }
- * Acesso: apenas dono do paciente (familiar). Gera código 6 dígitos válido por 24h.
- */
 export const gerarConvite = (req, res) => {
   const pacienteId = req.body?.paciente_id;
   const usuarioId = req.user.usuario_id;
@@ -24,11 +19,6 @@ export const gerarConvite = (req, res) => {
   });
 };
 
-/**
- * GET /api/vinculos/convite/:paciente_id
- * Retorna o convite ativo do paciente (código e expira_em), se existir.
- * Acesso: dono do paciente.
- */
 export const buscarConvite = (req, res) => {
   const pacienteId = req.params.paciente_id;
   const usuarioId = req.user.usuario_id;
@@ -44,11 +34,6 @@ export const buscarConvite = (req, res) => {
   });
 };
 
-/**
- * POST /api/vinculos/aceitar
- * Body: { codigo }
- * Acesso: apenas tipo cuidador. Aceita o convite e cria vínculo.
- */
 export const aceitarConvite = (req, res) => {
   const codigo = req.body?.codigo;
   const cuidadorId = req.user.usuario_id;
@@ -66,11 +51,6 @@ export const aceitarConvite = (req, res) => {
   });
 };
 
-/**
- * GET /api/vinculos/meus-pacientes
- * Lista pacientes vinculados ao cuidador logado.
- * Acesso: apenas tipo cuidador.
- */
 export const buscarMeusPacientes = (req, res) => {
   listarPacientesDoCuidador(req.user.usuario_id, (err, list) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -78,11 +58,6 @@ export const buscarMeusPacientes = (req, res) => {
   });
 };
 
-/**
- * GET /api/vinculos/cuidadores/:paciente_id
- * Lista cuidadores vinculados ao paciente.
- * Acesso: dono do paciente (familiar) ou membro do grupo de cuidado.
- */
 export const buscarCuidadoresDoPaciente = (req, res) => {
   const pacienteId = req.params.paciente_id;
   const usuarioId = req.user.usuario_id;
@@ -108,11 +83,6 @@ export const buscarCuidadoresDoPaciente = (req, res) => {
   });
 };
 
-/**
- * DELETE /api/vinculos/:paciente_id
- * Cuidador se desvincula de um paciente.
- * Acesso: cuidador logado.
- */
 export const desvincular = (req, res) => {
   const pacienteId = req.params.paciente_id;
   const cuidadorId = req.user.usuario_id;
@@ -124,11 +94,6 @@ export const desvincular = (req, res) => {
   });
 };
 
-/**
- * DELETE /api/vinculos/cuidador/:cuidador_id/paciente/:paciente_id
- * Familiar remove um cuidador do seu paciente.
- * Acesso: dono do paciente (familiar).
- */
 export const removerCuidador = (req, res) => {
   const { cuidador_id, paciente_id } = req.params;
   const usuarioId = req.user.usuario_id;

@@ -15,11 +15,6 @@ export const buscarHistorico = (req, res) => {
   });
 };
 
-/**
- * PATCH /api/pacientes/:id/historico-medico
- * Cria ou atualiza o histórico médico. Registra quem alterou e quando.
- * Acesso: dono do paciente ou cuidador vinculado (Ativo).
- */
 export const atualizarHistorico = (req, res) => {
   const pacienteId = req.params.id;
   const usuarioId = req.user.usuario_id;

@@ -3,7 +3,6 @@ import Vacina from "../models/vacinaModel.js";
 export const cadastrarVacina = (req, res) => {
   const { paciente_id, nome_vacina, data_aplicacao, unidade_saude } = req.body;
 
-  // Validação simples
   if (!paciente_id || !nome_vacina || !data_aplicacao) {
     return res.status(400).json({ message: "Campos obrigatórios: paciente, nome e data." });
   }

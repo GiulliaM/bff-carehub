@@ -1,8 +1,5 @@
 import db from "../config/db.js";
 
-/**
- * Verifica se o usuario pode editar o paciente via grupo_cuidado.
- */
 export const usuarioPodeEditarPaciente = (pacienteId, usuarioId, cb) => {
   db.query(
     "SELECT 1 FROM grupo_cuidado WHERE paciente_id = ? AND usuario_id = ? AND status = 'Ativo'",
@@ -14,9 +11,7 @@ export const usuarioPodeEditarPaciente = (pacienteId, usuarioId, cb) => {
   );
 };
 
-/**
- * Busca histórico médico do paciente com nome de quem fez a última alteração.
- */
+// inclui nome do ultimo editor via JOIN
 export const buscarPorPacienteId = (pacienteId, cb) => {
   const sql = `
     SELECT h.*, u.nome AS ultima_alteracao_nome
@@ -49,9 +44,7 @@ const COLUNAS = [
   "observacoes_gerais",
 ];
 
-/**
- * Cria ou atualiza histórico médico. Atualiza ultima_alteracao_por e ultima_alteracao_em.
- */
+// upsert — atualiza ultima_alteracao_por e ultima_alteracao_em
 export const salvarOuAtualizar = (pacienteId, usuarioId, data, cb) => {
   const allowed = {};
   COLUNAS.forEach((col) => {

@@ -49,9 +49,7 @@ export const listarRegistrosPorPaciente = (pacienteId, cb) => {
   });
 };
 
-/**
- * Listar registros de todos os pacientes do usuario (via grupo_cuidado).
- */
+// todos os pacientes do usuario via grupo_cuidado
 export const listarRegistrosPorUsuario = (usuarioId, cb) => {
   const sql = `
     SELECT d.*, u.nome as autor_nome

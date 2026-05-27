@@ -3,10 +3,6 @@ import db from "../config/db.js";
 const MAX_MEMBROS_POR_PACIENTE = 5;
 const MAX_PACIENTES_POR_USUARIO = 3;
 
-/**
- * Lista pacientes vinculados ao usuario (grupo de cuidado ativo).
- * ADICIONADO: gc.parentesco para o app saber a relação do usuário com cada paciente.
- */
 export const listarPacientesDoUsuario = (usuarioId, cb) => {
   const sql = `
     SELECT p.*, gc.papel, gc.status, gc.data_vinculo, gc.parentesco
@@ -18,10 +14,6 @@ export const listarPacientesDoUsuario = (usuarioId, cb) => {
   db.query(sql, [usuarioId], cb);
 };
 
-/**
- * Lista membros do grupo de cuidado de um paciente.
- * ADICIONADO: gc.parentesco para exibir no feed "Quem é quem" (Ex: João - Sobrinho).
- */
 export const listarMembrosDoGrupo = (pacienteId, cb) => {
   const sql = `
     SELECT u.usuario_id, u.nome, u.email, u.tipo, u.telefone, u.foto_url,
@@ -34,9 +26,6 @@ export const listarMembrosDoGrupo = (pacienteId, cb) => {
   db.query(sql, [pacienteId], cb);
 };
 
-/**
- * Verifica se o usuario faz parte do grupo de cuidado do paciente.
- */
 export const usuarioNoGrupo = (usuarioId, pacienteId, cb) => {
   db.query(
     "SELECT 1 FROM grupo_cuidado WHERE usuario_id = ? AND paciente_id = ? AND status = 'Ativo'",
@@ -48,10 +37,7 @@ export const usuarioNoGrupo = (usuarioId, pacienteId, cb) => {
   );
 };
 
-/**
- * Adicionar membro ao grupo (com validacao de limites).
- * ATUALIZADO: Agora aceita o campo 'parentesco' vindo do formulário/convite.
- */
+// verifica limites antes de inserir
 export const adicionarMembro = (usuarioId, pacienteId, papel, parentesco, cb) => {
   // Verificar limite de membros do paciente
   db.query(
@@ -63,7 +49,6 @@ export const adicionarMembro = (usuarioId, pacienteId, papel, parentesco, cb) =>
         return cb(null, { error: `Este paciente ja possui ${MAX_MEMBROS_POR_PACIENTE} membros no grupo de cuidado.` });
       }
 
-      // Verificar limite de pacientes do usuario
       db.query(
         "SELECT COUNT(*) AS total FROM grupo_cuidado WHERE usuario_id = ? AND status = 'Ativo'",
         [usuarioId],
@@ -73,8 +58,6 @@ export const adicionarMembro = (usuarioId, pacienteId, papel, parentesco, cb) =>
             return cb(null, { error: `Voce ja esta vinculado a ${MAX_PACIENTES_POR_USUARIO} pacientes.` });
           }
 
-          // Inserção com o novo campo parentesco
-          // Usamos COALESCE ou o valor padrão do banco 'Familiar' caso venha vazio
           const sql = `
             INSERT INTO grupo_cuidado (usuario_id, paciente_id, papel, status, parentesco)
             VALUES (?, ?, ?, 'Ativo', ?)
@@ -91,9 +74,6 @@ export const adicionarMembro = (usuarioId, pacienteId, papel, parentesco, cb) =>
   );
 };
 
-/**
- * Remover membro do grupo (encerrar vinculo).
- */
 export const removerMembro = (usuarioId, pacienteId, cb) => {
   db.query(
     "UPDATE grupo_cuidado SET status = 'Encerrado' WHERE usuario_id = ? AND paciente_id = ?",
@@ -102,9 +82,6 @@ export const removerMembro = (usuarioId, pacienteId, cb) => {
   );
 };
 
-/**
- * Listar usuarios responsaveis por uma tarefa.
- */
 export const listarResponsaveisTarefa = (tarefaId, cb) => {
   const sql = `
     SELECT u.usuario_id, u.nome
@@ -115,9 +92,7 @@ export const listarResponsaveisTarefa = (tarefaId, cb) => {
   db.query(sql, [tarefaId], cb);
 };
 
-/**
- * Definir responsaveis de uma tarefa (substitui todos).
- */
+// substitui todos os responsaveis da tarefa
 export const setResponsaveisTarefa = (tarefaId, usuarioIds, cb) => {
   db.query("DELETE FROM tarefa_responsaveis WHERE tarefa_id = ?", [tarefaId], (err) => {
     if (err) return cb(err);
