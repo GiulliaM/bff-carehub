@@ -2,8 +2,6 @@ import db from "../config/db.js";
 import medicamentoModel from "../models/medicamentoModel.js";
 import { pacientePertenceAoUsuario } from "../models/pacienteModel.js";
 
-// ─── Helpers internos ─────────────────────────────────────────────────────────
-
 function normalizarDataStr(valor) {
   if (!valor) return "";
   return valor instanceof Date

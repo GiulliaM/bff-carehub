@@ -2,6 +2,7 @@ import { criarUsuario, buscarPorEmail, buscarPorId, atualizarUsuario, buscarSenh
 import { salvarOuAtualizarPerfil } from "../models/cuidadorModel.js";
 import path from "path";
 import { fileURLToPath } from "url";
+import sharp from "sharp";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,13 +23,13 @@ export const cadastro = (req, res) => {
   }
 
   if (!process.env.JWT_SECRET) {
-    console.error("[ERRO CRÍTICO] JWT_SECRET não está definido no .env");
+    console.error("JWT_SECRET nao definido no .env");
     return res.status(500).json({ message: "Erro de configuração do servidor. Contate o administrador." });
   }
 
   buscarPorEmail(email, async (err, results) => {
     if (err) {
-      console.error("[cadastro] Erro ao buscar email:", err.message);
+      console.error("erro ao buscar email no cadastro:", err.message);
       return res.status(500).json({ message: "Erro ao verificar o e-mail. Tente novamente." });
     }
     if (results.length > 0) {
@@ -39,13 +40,13 @@ export const cadastro = (req, res) => {
     try {
       hash = await bcrypt.hash(senha, 10);
     } catch (hashErr) {
-      console.error("[cadastro] Erro ao hashear senha:", hashErr.message);
+      console.error("erro ao hashear senha:", hashErr.message);
       return res.status(500).json({ message: "Erro interno ao processar senha." });
     }
 
     criarUsuario({ nome, email, senha_hash: hash, tipo }, (err2, result) => {
       if (err2) {
-        console.error("[cadastro] Erro ao criar usuário no banco:", err2.message);
+        console.error("erro ao criar usuario:", err2.message);
         return res.status(500).json({ message: "Erro ao criar usuário no banco de dados.", detail: err2.message });
       }
 
@@ -58,7 +59,7 @@ export const cadastro = (req, res) => {
           token,
         });
       } catch (jwtErr) {
-        console.error("[cadastro] Erro ao gerar token JWT:", jwtErr.message);
+        console.error("erro ao gerar token:", jwtErr.message);
         return res.status(500).json({ message: "Usuário criado, mas erro ao gerar token. Faça login." });
       }
     });
@@ -73,13 +74,13 @@ export const login = (req, res) => {
   }
 
   if (!process.env.JWT_SECRET) {
-    console.error("[ERRO CRÍTICO] JWT_SECRET não está definido no .env");
+    console.error("JWT_SECRET nao definido no .env");
     return res.status(500).json({ message: "Erro de configuração do servidor." });
   }
 
   buscarPorEmail(email, async (err, results) => {
     if (err) {
-      console.error("[login] Erro ao buscar usuário:", err.message);
+      console.error("erro ao buscar usuario no login:", err.message);
       return res.status(500).json({ message: "Erro ao realizar login. Tente novamente." });
     }
     if (!results || results.length === 0) {
@@ -92,7 +93,7 @@ export const login = (req, res) => {
     try {
       valid = await bcrypt.compare(senha, user.senha_hash);
     } catch (bcryptErr) {
-      console.error("[login] Erro ao comparar senha:", bcryptErr.message);
+      console.error("erro ao comparar senha:", bcryptErr.message);
       return res.status(500).json({ message: "Erro interno ao verificar senha." });
     }
 
@@ -111,7 +112,7 @@ export const login = (req, res) => {
       const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, { expiresIn: "7d" });
       res.json({ usuario: usuarioCompleto, token });
     } catch (jwtErr) {
-      console.error("[login] Erro ao gerar token:", jwtErr.message);
+      console.error("erro ao gerar token no login:", jwtErr.message);
       return res.status(500).json({ message: "Erro ao gerar token de acesso." });
     }
   });
@@ -169,17 +170,30 @@ export const uploadFoto = (req, res) => {
     return res.status(400).json({ message: "Nenhuma foto enviada." });
   }
 
-  const proto = req.get('x-forwarded-proto') || req.protocol;
-  const host = req.get('x-forwarded-host') || req.get('host');
-  const rawBase = process.env.BASE_URL
-    ? process.env.BASE_URL.replace(/\/api\/?$/, '').replace(/\/$/, '')
-    : `${proto}://${host}`;
-  const foto_url = `${rawBase}/uploads/${req.file.filename}`;
+  const filename = `usuario_${id}_${Date.now()}.jpg`;
+  const outputPath = path.resolve(__dirname, "../../uploads", filename);
 
-  atualizarUsuario(id, { foto_url }, (err) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ foto_url });
-  });
+  sharp(req.file.buffer)
+    .resize({ width: 1200, height: 1200, fit: "inside", withoutEnlargement: true })
+    .jpeg({ quality: 70 })
+    .toFile(outputPath)
+    .then(() => {
+      const proto = req.get('x-forwarded-proto') || req.protocol;
+      const host = req.get('x-forwarded-host') || req.get('host');
+      const rawBase = process.env.BASE_URL
+        ? process.env.BASE_URL.replace(/\/api\/?$/, '').replace(/\/$/, '')
+        : `${proto}://${host}`;
+      const foto_url = `${rawBase}/uploads/${filename}`;
+
+      atualizarUsuario(id, { foto_url }, (err) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ foto_url });
+      });
+    })
+    .catch((err) => {
+      console.error("erro ao processar imagem:", err);
+      res.status(500).json({ message: "Erro ao processar imagem." });
+    });
 };
 
 export const alterarSenha = (req, res) => {
@@ -210,7 +224,7 @@ export const alterarSenha = (req, res) => {
       });
 
     } catch (bcryptErr) {
-      console.error("[alterarSenha] Erro:", bcryptErr);
+      console.error("erro ao alterar senha:", bcryptErr);
       return res.status(500).json({ message: "Erro interno ao processar senhas." });
     }
   });
