@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
 import usuarioRoutes from "./routes/usuarioRoutes.js";
@@ -43,6 +44,9 @@ app.use((req, res) => {
 
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError && err.code === "LIMIT_FILE_SIZE") {
+    return res.status(413).json({ message: "Foto muito grande. O limite é 50 MB." });
+  }
   console.error(`${req.method} ${req.originalUrl}:`, err.message);
   console.error(err.stack);
   res.status(500).json({
