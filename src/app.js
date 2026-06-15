@@ -16,6 +16,7 @@ import vinculoRoutes from "./routes/vinculoRoutes.js";
 import grupoCuidadoRoutes from "./routes/grupoCuidadoRoutes.js";
 import artigoRoutes from "./routes/artigoRoutes.js";
 import vacinaRoutes from "./routes/vacinaRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 
 const app = express();
 app.use(cors());
@@ -34,6 +35,7 @@ app.use("/api/vinculos", vinculoRoutes);
 app.use("/api/grupo", grupoCuidadoRoutes);
 app.use("/api/artigos", artigoRoutes);
 app.use("/api/vacinas", vacinaRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.get("/", (req, res) => res.json({ message: "CareHub API OK", version: "2.0.0" }));
 

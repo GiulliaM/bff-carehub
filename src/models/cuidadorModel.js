@@ -29,6 +29,7 @@ const COLUNAS_PERFIL = [
   "bairro",
   "foto_url",
   "telefone",
+  "cpf",
   "disponivel_busca",
 ];
 
@@ -80,6 +81,7 @@ export const listarParaBusca = (filtros, cb) => {
     FROM perfil_cuidadores p
     JOIN usuarios u ON u.usuario_id = p.usuario_id
     WHERE p.disponivel_busca = 1
+      AND p.status = 'aprovado'
   `;
   const params = [];
 
