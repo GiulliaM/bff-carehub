@@ -1,5 +1,31 @@
 import db from "../config/db.js";
 
+// status atual do perfil do cuidador ('pendente' | 'aprovado' | 'rejeitado'), ou null se nao tem perfil
+export const buscarStatus = (usuarioId, cb) => {
+  db.query(
+    "SELECT status FROM perfil_cuidadores WHERE usuario_id = ?",
+    [usuarioId],
+    (err, results) => {
+      if (err) return cb(err);
+      cb(null, results && results[0] ? results[0].status : null);
+    }
+  );
+};
+
+// procura outro cuidador com o mesmo CPF (compara so digitos), ignorando o proprio usuario
+export const buscarPorCpf = (cpfDigitos, ignorarUsuarioId, cb) => {
+  db.query(
+    `SELECT usuario_id FROM perfil_cuidadores
+     WHERE REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') = ?
+       AND usuario_id <> ?`,
+    [cpfDigitos, ignorarUsuarioId || 0],
+    (err, results) => {
+      if (err) return cb(err);
+      cb(null, results && results[0] ? results[0] : null);
+    }
+  );
+};
+
 export const buscarPorUsuarioId = (usuarioId, cb) => {
   const sql = `
     SELECT p.*, u.nome
@@ -55,17 +81,22 @@ export const salvarOuAtualizarPerfil = (usuarioId, data, cb) => {
     const values = keys.map((k) => allowed[k]);
 
     if (existing) {
+      // se o perfil estava rejeitado e o cuidador editou, volta pra analise
+      const resetStatus = existing.status === "rejeitado"
+        ? ", status = 'pendente', motivo_rejeicao = NULL"
+        : "";
       const setClause = keys.map((k) => `${k} = ?`).join(", ");
-      const sql = `UPDATE perfil_cuidadores SET ${setClause} WHERE usuario_id = ?`;
+      const sql = `UPDATE perfil_cuidadores SET ${setClause}${resetStatus} WHERE usuario_id = ?`;
       db.query(sql, [...values, usuarioId], (err2, result) => {
         if (err2) return cb(err2);
         buscarPorUsuarioId(usuarioId, cb);
       });
     } else {
-      const cols = ["usuario_id", ...keys];
-      const placeholders = ["?", ...keys.map(() => "?")];
+      // perfil novo sempre entra como pendente, aguardando aprovacao do admin
+      const cols = ["usuario_id", ...keys, "status"];
+      const placeholders = ["?", ...keys.map(() => "?"), "?"];
       const sql = `INSERT INTO perfil_cuidadores (${cols.join(", ")}) VALUES (${placeholders.join(", ")})`;
-      db.query(sql, [usuarioId, ...values], (err2, result) => {
+      db.query(sql, [usuarioId, ...values, "pendente"], (err2, result) => {
         if (err2) return cb(err2);
         buscarPorUsuarioId(usuarioId, cb);
       });
