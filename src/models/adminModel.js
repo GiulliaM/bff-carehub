@@ -12,29 +12,35 @@ export const buscarStats = (cb) => {
     FROM perfil_cuidadores
     GROUP BY status
   `;
+  const sqlPacientes = `SELECT COUNT(*) as total FROM pacientes`;
   db.query(sqlUsuarios, (err, rowsUsuarios) => {
     if (err) return cb(err);
     db.query(sqlStatus, (err2, rowsStatus) => {
       if (err2) return cb(err2);
-      const stats = {
-        total_usuarios: 0,
-        total_familiares: 0,
-        total_cuidadores: 0,
-        pendentes: 0,
-        aprovados: 0,
-        rejeitados: 0,
-      };
-      (rowsUsuarios || []).forEach((r) => {
-        if (r.tipo === "familiar") stats.total_familiares = Number(r.total);
-        if (r.tipo === "cuidador") stats.total_cuidadores = Number(r.total);
-        stats.total_usuarios += Number(r.total);
+      db.query(sqlPacientes, (err3, rowsPacientes) => {
+        if (err3) return cb(err3);
+        const stats = {
+          total_usuarios: 0,
+          total_familiares: 0,
+          total_cuidadores: 0,
+          total_pacientes: 0,
+          pendentes: 0,
+          aprovados: 0,
+          rejeitados: 0,
+        };
+        (rowsUsuarios || []).forEach((r) => {
+          if (r.tipo === "familiar") stats.total_familiares = Number(r.total);
+          if (r.tipo === "cuidador") stats.total_cuidadores = Number(r.total);
+          stats.total_usuarios += Number(r.total);
+        });
+        (rowsStatus || []).forEach((r) => {
+          if (r.status === "pendente") stats.pendentes = Number(r.total);
+          if (r.status === "aprovado") stats.aprovados = Number(r.total);
+          if (r.status === "rejeitado") stats.rejeitados = Number(r.total);
+        });
+        stats.total_pacientes = Number((rowsPacientes && rowsPacientes[0]?.total) || 0);
+        cb(null, stats);
       });
-      (rowsStatus || []).forEach((r) => {
-        if (r.status === "pendente") stats.pendentes = Number(r.total);
-        if (r.status === "aprovado") stats.aprovados = Number(r.total);
-        if (r.status === "rejeitado") stats.rejeitados = Number(r.total);
-      });
-      cb(null, stats);
     });
   });
 };
@@ -54,6 +60,49 @@ export const listarUsuarios = (filtros, cb) => {
   db.query(sql, params, (err, results) => {
     if (err) return cb(err);
     cb(null, results || []);
+  });
+};
+
+// Familiares com os pacientes que estao vinculados a eles (grupo_cuidado Ativo).
+// Cuidadores tem listagem propria; aqui o foco e familiar + entes queridos.
+export const listarFamiliaresComPacientes = (cb) => {
+  const sqlFamiliares = `
+    SELECT usuario_id, nome, email, tipo, telefone, foto_url, created_at
+    FROM usuarios
+    WHERE tipo = 'familiar'
+    ORDER BY created_at DESC
+  `;
+  const sqlVinculos = `
+    SELECT gc.usuario_id, p.paciente_id, p.nome, p.idade, p.genero,
+           gc.parentesco, gc.papel
+    FROM grupo_cuidado gc
+    JOIN pacientes p ON p.paciente_id = gc.paciente_id
+    JOIN usuarios u ON u.usuario_id = gc.usuario_id
+    WHERE gc.status = 'Ativo' AND u.tipo = 'familiar'
+    ORDER BY gc.data_vinculo ASC
+  `;
+  db.query(sqlFamiliares, (err, familiares) => {
+    if (err) return cb(err);
+    db.query(sqlVinculos, (err2, vinculos) => {
+      if (err2) return cb(err2);
+      const porUsuario = {};
+      (vinculos || []).forEach((v) => {
+        if (!porUsuario[v.usuario_id]) porUsuario[v.usuario_id] = [];
+        porUsuario[v.usuario_id].push({
+          paciente_id: v.paciente_id,
+          nome: v.nome,
+          idade: v.idade,
+          genero: v.genero,
+          parentesco: v.parentesco,
+          papel: v.papel,
+        });
+      });
+      const lista = (familiares || []).map((f) => ({
+        ...f,
+        pacientes: porUsuario[f.usuario_id] || [],
+      }));
+      cb(null, lista);
+    });
   });
 };
 

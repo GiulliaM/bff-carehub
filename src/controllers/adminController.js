@@ -1,6 +1,7 @@
 import {
   buscarStats,
   listarUsuarios,
+  listarFamiliaresComPacientes,
   listarCuidadores,
   buscarCuidadorDetalhado,
   atualizarStatusCuidador,
@@ -16,6 +17,13 @@ export const stats = (req, res) => {
 export const listarUsuariosAdmin = (req, res) => {
   const filtros = { tipo: req.query.tipo };
   listarUsuarios(filtros, (err, data) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(data);
+  });
+};
+
+export const listarFamiliaresAdmin = (req, res) => {
+  listarFamiliaresComPacientes((err, data) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(data);
   });
