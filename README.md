@@ -5,7 +5,7 @@ Conecta **familiares**, **cuidadores** e **administradores**, gerenciando pacien
 (tarefas e medicamentos), diário de cuidados, histórico médico, vínculos por código e
 perfis profissionais de cuidadores.
 
-> App mobile correspondente: **[fed-carehub](../fed-carehub)** (React Native + Expo).
+> App mobile correspondente: **[fed-carehub](https://github.com/GiulliaM/fed-carehub)** (React Native + Expo).
 
 ---
 
