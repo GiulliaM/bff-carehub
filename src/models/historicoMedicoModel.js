@@ -59,9 +59,11 @@ export const salvarOuAtualizar = (pacienteId, usuarioId, data, cb) => {
 
   buscarPorPacienteId(pacienteId, (err, existing) => {
     if (err) return cb(err);
-    const now = new Date().toISOString().slice(0, 19).replace("T", " ");
+    // Passa um Date: o mysql2 (pool com timezone '-03:00') converte na escrita
+    // e na leitura de forma consistente. Usar toISOString() gravava UTC e a
+    // leitura reinterpretava como -03:00, adiantando 3h no app.
     allowed.ultima_alteracao_por = usuarioId;
-    allowed.ultima_alteracao_em = now;
+    allowed.ultima_alteracao_em = new Date();
 
     if (existing) {
       const keys = Object.keys(allowed);
