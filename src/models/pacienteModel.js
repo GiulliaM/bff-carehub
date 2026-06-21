@@ -102,28 +102,34 @@ export const usuarioEhDono = (pacienteId, usuarioId, cb) => {
 };
 
 export const deletarPaciente = (pacienteId, cb) => {
-  // Deletar dados dependentes em ordem antes do paciente
-  db.query("DELETE di FROM diario_itens di JOIN diario_registros dr ON dr.registro_id = di.registro_id WHERE dr.paciente_id = ?", [pacienteId], (err) => {
-    if (err) return cb(err);
-    db.query("DELETE FROM diario_registros WHERE paciente_id = ?", [pacienteId], (err2) => {
-      if (err2) return cb(err2);
-      db.query("DELETE FROM medicamentos WHERE paciente_id = ?", [pacienteId], (err3) => {
-        if (err3) return cb(err3);
-        db.query("DELETE FROM tarefas WHERE paciente_id = ?", [pacienteId], (err4) => {
-          if (err4) return cb(err4);
-          db.query("DELETE FROM historico_medico WHERE paciente_id = ?", [pacienteId], (err5) => {
-            if (err5) return cb(err5);
-            db.query("DELETE FROM vacinas WHERE paciente_id = ?", [pacienteId], (err6) => {
-              if (err6) return cb(err6);
-              db.query("DELETE FROM grupo_cuidado WHERE paciente_id = ?", [pacienteId], (err7) => {
-                if (err7) return cb(err7);
-                db.query("DELETE FROM pacientes WHERE paciente_id = ?", [pacienteId], cb);
-              });
-            });
-          });
-        });
-      });
+  // Deletar dados dependentes em ordem (dos netos ate o paciente), pois o
+  // carehub_db (Sequelize) nao garante ON DELETE CASCADE em todas as FKs.
+  const passos = [
+    // diario: itens -> registros
+    "DELETE di FROM diario_itens di JOIN diario_registros dr ON dr.registro_id = di.registro_id WHERE dr.paciente_id = ?",
+    "DELETE FROM diario_registros WHERE paciente_id = ?",
+    // medicamentos: doses -> medicamentos
+    "DELETE md FROM medicamento_doses md JOIN medicamentos m ON m.medicamento_id = md.medicamento_id WHERE m.paciente_id = ?",
+    "DELETE FROM medicamentos WHERE paciente_id = ?",
+    // tarefas: responsaveis -> tarefas
+    "DELETE tr FROM tarefa_responsaveis tr JOIN tarefas t ON t.tarefa_id = tr.tarefa_id WHERE t.paciente_id = ?",
+    "DELETE FROM tarefas WHERE paciente_id = ?",
+    // demais dependentes diretos do paciente
+    "DELETE FROM historico_medico WHERE paciente_id = ?",
+    "DELETE FROM vacinas WHERE paciente_id = ?",
+    "DELETE FROM convites_vinculo WHERE paciente_id = ?",
+    "DELETE FROM vinculos_cuidador_paciente WHERE paciente_id = ?",
+    "DELETE FROM grupo_cuidado WHERE paciente_id = ?",
+    "DELETE FROM pacientes WHERE paciente_id = ?",
+  ];
+
+  const executar = (i) => {
+    if (i >= passos.length) return cb(null);
+    db.query(passos[i], [pacienteId], (err) => {
+      if (err) return cb(err);
+      executar(i + 1);
     });
-  });
+  };
+  executar(0);
 };
 

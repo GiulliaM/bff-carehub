@@ -47,7 +47,7 @@ export const buscarStats = (cb) => {
 
 export const listarUsuarios = (filtros, cb) => {
   let sql = `
-    SELECT usuario_id, nome, email, tipo, created_at
+    SELECT usuario_id, nome, email, tipo, telefone, foto_url, created_at
     FROM usuarios
     WHERE tipo != 'admin'
   `;
@@ -67,7 +67,7 @@ export const listarUsuarios = (filtros, cb) => {
 // Cuidadores tem listagem propria; aqui o foco e familiar + entes queridos.
 export const listarFamiliaresComPacientes = (cb) => {
   const sqlFamiliares = `
-    SELECT usuario_id, nome, email, tipo, created_at
+    SELECT usuario_id, nome, email, tipo, telefone, foto_url, created_at
     FROM usuarios
     WHERE tipo = 'familiar'
     ORDER BY created_at DESC
