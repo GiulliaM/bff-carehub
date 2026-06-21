@@ -47,7 +47,7 @@ export const buscarStats = (cb) => {
 
 export const listarUsuarios = (filtros, cb) => {
   let sql = `
-    SELECT usuario_id, nome, email, tipo, telefone, foto_url, created_at
+    SELECT usuario_id, nome, email, tipo, created_at
     FROM usuarios
     WHERE tipo != 'admin'
   `;
