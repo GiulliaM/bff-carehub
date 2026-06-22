@@ -73,7 +73,7 @@ export const listarFamiliaresComPacientes = (cb) => {
     ORDER BY created_at DESC
   `;
   const sqlVinculos = `
-    SELECT gc.usuario_id, p.paciente_id, p.nome, p.idade, p.genero,
+    SELECT gc.usuario_id, p.paciente_id, p.nome, p.idade, p.data_nascimento, p.genero,
            gc.parentesco, gc.papel
     FROM grupo_cuidado gc
     JOIN pacientes p ON p.paciente_id = gc.paciente_id
@@ -92,6 +92,7 @@ export const listarFamiliaresComPacientes = (cb) => {
           paciente_id: v.paciente_id,
           nome: v.nome,
           idade: v.idade,
+          data_nascimento: v.data_nascimento,
           genero: v.genero,
           parentesco: v.parentesco,
           papel: v.papel,
