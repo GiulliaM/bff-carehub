@@ -98,7 +98,7 @@ export const desvincularCuidadorDoPaciente = (cuidadorId, pacienteId, cb) => {
 
 export const listarPacientesDoCuidador = (cuidadorId, cb) => {
   const sql = `
-    SELECT p.paciente_id, p.nome, p.idade, p.genero, gc.data_vinculo
+    SELECT p.paciente_id, p.nome, p.idade, p.data_nascimento, p.genero, gc.data_vinculo
     FROM grupo_cuidado gc
     JOIN pacientes p ON p.paciente_id = gc.paciente_id
     WHERE gc.usuario_id = ? AND gc.status = 'Ativo'
